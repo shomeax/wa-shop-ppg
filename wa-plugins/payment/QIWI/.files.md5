@@ -1,0 +1,9 @@
+9a9cb75b13b48a9f482a7e445d95fedd *lib/QIWIPayment.class.php
+0fdd643abe679a1baa0005f4596736dc *lib/config/plugin.php
+f35c49d549e93dd398fea23c49856f97 *lib/config/settings.php
+7c2de7407a4b0a9cbbf320c97d9bd8b3 *templates/payment.html
+b135db6c7951f9193c698c83b782a292 *vendors/nusoap/nusoap.php
+3791636d3e646210ecd24fd779fc11fa *vendors/qiwi/IShopClientWS.wsdl
+82ae18b8db5a8ef1e318e7090033a268 *vendors/qiwi/IShopClientWSService.php
+befa6f061bdc5bac41eaa73753be446d *vendors/qiwi/IShopServerWS.wsdl
+db1bb52c814e72e3982d6b34704157ca *vendors/qiwi/IShopServerWSService.php
