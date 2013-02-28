@@ -292,12 +292,22 @@ $.wa.contactEditor.factoryTypes.Select = $.extend({}, $.wa.contactEditor.baseFie
         if(mode == 'view') {
             return $('<span class="val"></span>').text(this.fieldData.options[this.fieldValue] || this.fieldValue);
         } else {
-            var options = '<option value="">'+this.notSet()+'</option>';
+            var options = '';
+            var selected = false, attrs;
             for(var i = 0; i<this.fieldData.oOrder.length; i++) {
                 var id = this.fieldData.oOrder[i];
-                options += '<option value="'+id+'"'+(id == this.fieldValue ? ' selected' : '')+'>'+this.fieldData.options[id]+'</option>';
+                if (!selected && id == this.fieldValue && this.fieldValue) {
+                    selected = true;
+                    attrs = ' selected';
+                } else {
+                    attrs = '';
+                }
+                if (id === '') {
+                    attrs += ' disabled';
+                }
+                options += '<option value="'+id+'"'+attrs+'>'+this.fieldData.options[id]+'</option>';
             }
-            return $('<div><select class="val">'+options+'</select></div>');
+            return $('<div><select class="val"><option value=""'+(selected ? '' : ' selected')+'>'+this.notSet()+'</option>'+options+'</select></div>');
         }
     }
 });
@@ -353,11 +363,20 @@ $.wa.contactEditor.factoryTypes.Conditional = $.extend({}, $.wa.contactEditor.fa
                 var select = $('<select class="val"></select>').hide();
                 var change_handler;
 
+                var getVal = function() {
+                    if (input.is(':visible')) {
+                        return input.val();
+                    } else {
+                        return select.val();
+                    }
+                };
+
                 // Listen to change events from field we depend on.
                 // setTimeout() to ensure that field created its new domElement.
                 setTimeout(function() {
                     var parent_val_element = parent_field.domElement.find('.val').change(change_handler = function() {
-                        var parent_value = parent_val_element.val();
+                        var old_val = getVal();
+                        var parent_value = parent_val_element.val().toLowerCase();
                         var values = cond_field.fieldData.parent_options[parent_value];
                         if (values) {
                             input.hide();
@@ -365,8 +384,9 @@ $.wa.contactEditor.factoryTypes.Conditional = $.extend({}, $.wa.contactEditor.fa
                             for (i = 0; i < values.length; i++) {
                                 select.append($('<option></option>').attr('value', values[i]).text(values[i]).attr('selected', cond_field.fieldValue == values[i]));
                             }
+                            select.val(old_val);
                         } else {
-                            input.val(cond_field.fieldValue).show().removeClass('empty');
+                            input.val(old_val).show().removeClass('empty');
                             select.hide();
                         }
                     });

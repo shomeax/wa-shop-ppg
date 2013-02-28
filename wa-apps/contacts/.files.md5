@@ -4,7 +4,7 @@ d0d80ea00e68538e180092caff290f63 *css/contacts.css
 9631d166f1a35b24ef49e978c8aec25d *img/arrow-right32.png
 40719631c27283dd98e4d2b1d57d4eb3 *img/contacts.png
 017f44ac14033d96aa01d9af8630ad0c *img/gray-noisy-bg.jpg
-dca1c007003f5e0837291848ceddc848 *js/fieldTypes.js
+9d75314f44f20e7024aca9194a58e5f0 *js/fieldTypes.js
 01f07f17b2ee83fcf581fbdd4a7597f3 *js/wa.contactEditor.js
 7efbd946172ec7fe87a149ab546dd29d *js/wa.controller.js
 3828b43f7b1011805662f98de3a70bbe *js/wa.grid.js
@@ -44,7 +44,7 @@ cd50f7ee5c701f1fb549eb348a2d6aa4 *lib/actions/photo/contactsPhotoEditor.action.p
 fc0d2da7bcdf1bb3a0658dc942db4ed5 *lib/classes/contactsHelper.class.php
 d649420a08780520dda8d19e14d88c0a *lib/config/app.php
 c3d3b386df4d3a35b836218577bee1a4 *lib/config/app.sql
-03c7791be82af421e8f33e07de69bde1 *lib/config/build.php
+ef0ecdea90ad84ff84589f6103f84c7d *lib/config/build.php
 8854cd6f6c92d233510f8589090d26ab *lib/config/contactsAnalyticsConfig.class.php
 a4730d8b44e4dc229b83c5386008060b *lib/config/contactsRightConfig.class.php
 8fc1ba0a453d71d16e3603da35e5270e *lib/config/data/thumb.php
