@@ -158,6 +158,7 @@ return array(
         'iso3letter' => array('varchar', 3, 'null' => 0),
         'iso2letter' => array('varchar', 2, 'null' => 0),
         'isonumeric' => array('varchar', 3, 'null' => 0),
+        'fav_sort' => array('int', 11),
         ':keys' => array(
             'PRIMARY' => 'iso3letter',
             'isonumeric' => array('isonumeric', 'unique' => 1),
@@ -199,14 +200,15 @@ return array(
         'country_iso3' => array('varchar', 3, 'null' => 0),
         'code' => array('varchar', 8, 'null' => 0),
         'name' => array('varchar', 255, 'null' => 0),
+        'fav_sort' => array('int', 11),
         ':keys' => array(
             'PRIMARY' => array('country_iso3', 'code'),
         ),
     ),
     'wa_transaction' => array(
         'id' => array('int', 11, 'null' => 0, 'autoincrement' => 1),
-        'paymentsystem_id' => array('varchar', 50, 'null' => 0),
-        'application_id' => array('varchar', 50, 'null' => 0),
+        'plugin' => array('varchar', 50, 'null' => 0),
+        'app_id' => array('varchar', 50, 'null' => 0),
         'merchant_id' => array('varchar', 50),
         'native_id' => array('varchar', 255, 'null' => 0),
         'create_datetime' => array('datetime', 'null' => 0),
@@ -223,8 +225,8 @@ return array(
         'currency_id' => array('varchar', 3),
         ':keys' => array(
             'PRIMARY' => 'id',
-            'paymentsystem_id' => 'paymentsystem_id',
-            'application_id' => 'application_id',
+            'plugin' => 'plugin',
+            'app_id' => 'app_id',
             'merchant_id' => 'merchant_id',
             'transaction_native_id' => 'native_id',
             'parent_id' => 'parent_id',

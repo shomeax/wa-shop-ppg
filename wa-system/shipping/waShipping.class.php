@@ -25,6 +25,28 @@ abstract class waShipping extends waSystemPlugin
 
     /**
      *
+     * @var waAppShipping
+     */
+    private $app_adapter;
+
+    protected $app_id;
+
+    protected function init()
+    {
+        if (!$this->app_id && $this->app_adapter) {
+            $this->app_id = $this->app_adapter->getAppId();
+        }
+        if (!$this->app_id) {
+            $this->app_id = wa()->getApp();
+        }
+
+        if ($this->key) {
+            $this->setSettings($this->getAdapter()->getSettings($this->id, $this->key));
+        }
+    }
+
+    /**
+     *
      * Sets destination address
      * @param array $address
      * @return waShipping
@@ -259,9 +281,16 @@ abstract class waShipping extends waSystemPlugin
      * @param waiPluginSettings $adapter
      * @return waShipping
      */
-    public static function factory($id, $adapter = null, $key = null, $type = null)
+    public static function factory($id, $key = null, $app_adapter = null)
     {
-        return parent::factory($id, $adapter, $key, self::PLUGIN_TYPE);
+        $instance = parent::factory($id, $key, self::PLUGIN_TYPE);
+        if ($app_adapter && ($app_adapter instanceof waAppShipping)) {
+            $instance->app_adapter = $app_adapter;
+        } elseif ($app_adapter && is_string($app_adapter)) {
+            $instance->app_id = $app_adapter;
+        }
+        $instance->init();
+        return $instance;
     }
 
     /**
@@ -291,6 +320,36 @@ abstract class waShipping extends waSystemPlugin
     final public static function info($id, $options = array(), $type = null)
     {
         return parent::info($id, $options, self::PLUGIN_TYPE);
+    }
+
+    /**
+     *
+     * @return waAppPayment
+     */
+    final protected function getAdapter()
+    {
+        if (!$this->app_adapter) {
+            if (!$this->app_id) {
+                throw new waException('Unknown current application');
+            }
+
+            #Init application
+            waSystem::getInstance($this->app_id);
+            waSystem::setActive($this->app_id);
+
+            #check adapter class
+            $app_class = $this->app_id.'Shipping';
+            if (!class_exists($app_class)) {
+                throw new waException(sprintf('Application adapter %s not found for %s', $app_class, $this->app_id));
+            }
+            $instance = new $app_class();
+            if (!($instance instanceof waAppShipping)) {
+                throw new waException(sprintf('Application adapter %s not found for %s', $app_class, $this->app_id));
+            }
+            $this->app_adapter = $instance;
+        }
+
+        return $this->app_adapter;
     }
 
 }

@@ -150,7 +150,7 @@ class waResponse {
       public function setMeta($name, $value = null)
       {
           if (is_array($name)) {
-              $this->metas += $name;
+              $this->metas = $name + $this->metas;
           } else {
               $this->metas[$name] = $value;
           }

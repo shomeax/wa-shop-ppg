@@ -215,10 +215,8 @@ class waSystemConfig
             return;
         }
 
-	if (!function_exists("array_stripslashes")) {
         function array_stripslashes($array) {
             return is_array($array) ? array_map("array_stripslashes", $array) : stripslashes($array);
-        }
         }
 
         $_GET = array_stripslashes($_GET);

@@ -47,6 +47,12 @@ abstract class waPayment extends waSystemPlugin
     const CALLBACK_CAPTURE = 'capture';
     /**
      *
+     * Обработка отказа
+     * @var string
+     */
+    const CALLBACK_DECLINE = 'decline';
+    /**
+     *
      * Обработка отмены
      * @var string
      */
@@ -126,6 +132,7 @@ abstract class waPayment extends waSystemPlugin
     const STATE_CAPTURED = 'CAPTURED';
     const STATE_AUTH = 'AUTH';
     const STATE_REFUNDED = 'REFUNDED';
+    const STATE_CANCELED = 'CANCELED';
     const STATE_PARTIAL_REFUNDED = 'PARTIAL_REFUNDED';
     const STATE_DECLINED = 'DECLINED';
     const STATE_VERIFIED = 'VERIFIED';
@@ -139,14 +146,7 @@ abstract class waPayment extends waSystemPlugin
 
     private static $module_pool = array();
     private static $init = false;
-    protected $app_id;
     protected $properties;
-
-    /**
-     *
-     * @var waAppPayment
-     */
-    protected $app_adapter;
 
     /**
      *
@@ -157,15 +157,30 @@ abstract class waPayment extends waSystemPlugin
 
     /**
      *
+     * @var waAppPayment
+     */
+    private $app_adapter;
+
+    protected $app_id;
+
+    /**
+     *
      * Get payment plugin instance
      * @param string $id
      * @param waiPluginSettings $adapter optional
      * @param int $merchant_id Merchant key
      * @return waPayment
      */
-    public static function factory($id, $adapter = null, $merchant_id = null, $type = null)
+    public static function factory($id, $merchant_id = null, $app_adapter = null)
     {
-        return parent::factory($id, $adapter, $merchant_id, self::PLUGIN_TYPE);
+        $instance = parent::factory($id, $merchant_id, self::PLUGIN_TYPE);
+        if ($app_adapter && ($app_adapter instanceof waAppPayment)) {
+            $instance->app_adapter = $app_adapter;
+        } elseif ($app_adapter && is_string($app_adapter)) {
+            $instance->app_id = $app_adapter;
+        }
+        $instance->init();
+        return $instance;
     }
 
     /**
@@ -196,12 +211,24 @@ abstract class waPayment extends waSystemPlugin
         return parent::info($id, $options, self::PLUGIN_TYPE);
     }
 
+    /**
+     *
+     * @return waPayment
+     */
     protected function init()
     {
-        $this->merchant_id =& $this->key;
+        if (!$this->app_id && $this->app_adapter) {
+            $this->app_id = $this->app_adapter->getAppId();
+        }
         if (!$this->app_id) {
             $this->app_id = wa()->getApp();
         }
+
+        if ($this->key) {
+            $this->setSettings($this->getAdapter()->getSettings($this->id, $this->key));
+        }
+        $this->merchant_id =& $this->key;
+        return $this;
     }
 
     /**
@@ -210,36 +237,7 @@ abstract class waPayment extends waSystemPlugin
      */
     public function allowedCurrency()
     {
-        return array();
-    }
-
-    /**
-     * Execute specified transaction by payment module on $request data
-     *
-     * @example waPayment::execTransaction(waPayment::TRANSACTION_CAPTURE,'AuthorizeNet',$adapter,$params)
-     * @param $transaction
-     * @param $module_id
-     * @param $adapter
-     * @param $params
-     * @return unknown_type
-     */
-    public static function execTransaction($transaction, $module_id, $adapter, $params)
-    {
-        $instance = self::factory($module_id);
-
-        $transaction_method = $transaction;
-        $transactions = array(
-            self::TRANSACTION_CONFIRM,
-            self::TRANSACTION_AUTH,
-            self::TRANSACTION_REFUND,
-            self::TRANSACTION_CAPTURE,
-            self::TRANSACTION_CANCEL,
-            self::TRANSACTION_PAYMENT,
-        );
-        if (!in_array($transaction_method, $transactions)) {
-            throw new waException(sprintf('Unsupported transaction %s at %s', $transaction, get_class($instance)));
-        }
-        return $instance->transactionInit($adapter)->$transaction_method($params);
+        return null;
     }
 
     //Callback
@@ -248,12 +246,24 @@ abstract class waPayment extends waSystemPlugin
     {
         self::log($module_id, $request);
         try {
-            return self::factory($module_id)->callbackRoute($request)->callbackHandler($request);
+            $module = self::factory($module_id);
+            return $module->callbackInit($request)->init()->callbackHandler($request);
         } catch (Exception $ex) {
-            return array(
-                'error' => $ex->getMessage(),
-            );
+            if ($module) {
+                return $module->callbackExceptionHandler($ex);
+            } else {
+                return array(
+                    'error' => $ex->getMessage(),
+                );
+            }
         }
+    }
+
+    protected function callbackExceptionHandler(Exception $ex)
+    {
+        return array(
+            'error' => $ex->getMessage(),
+        );
     }
 
     /**
@@ -261,28 +271,13 @@ abstract class waPayment extends waSystemPlugin
      * Determine target application and merchant key
      * @param array $request
      */
-    protected function callbackRoute($request)
+    protected function callbackInit($request)
     {
-        if (!$this->app_adapter) {
-            if ($this->app_id && $this->merchant_id) {
-                $this->app_adapter = self::getAdapter($this->app_id, $this->merchant_id);
-            }
-        }
-        if (!$this->app_adapter || !($this->app_adapter instanceof waAppPayment)) {
-            $this->app_adapter = false;
-            $this->app_id = null;
-            $this->merchant_id = null;
-        } else {
-            if (empty($this->merchant_id)) {
-                $this->merchant_id = $this->app_adapter->getMerchantId();
-            }
-            if (empty($this->app_id)) {
-                $this->app_id = $this->app_adapter->getAppId();
-            }
-        }
-        if ($this->merchant_id && $this->app_id && $this->app_adapter) {
-            $this->setSettings($this->app_adapter->getMerchantData($this->id, $this->merchant_id));
-        }
+        self::log($this->id, array(
+            'method'      => __METHOD__,
+            'app_id'      => $this->app_id,
+            'merchant_id' => $this->merchant_id,
+        ));
         return $this;
     }
 
@@ -303,19 +298,41 @@ abstract class waPayment extends waSystemPlugin
      * @param unknown_type $transaction_data
      * @return array[string]mixed
      * @return array['order_id']int
+     * @return array['customer_id']int
+     * @return array['result']booleant
+     * @return array['error']string
      */
     protected function execAppCallback($method, $transaction_data)
     {
         $default = array(
             'order_id'    => null,
             'customer_id' => null,
+            'result'      => true,
+            'error'       => null,
         );
         try {
-            $result = $this->app_adapter->execCallbackHandler($method, $transaction_data, $this->id, $this->merchant_id);
+            $result = $this->getAdapter()->execCallbackHandler($method, $transaction_data);
         } catch (Exception $ex) {
             $result = array('error' => $ex->getMessage());
         }
-        return array_merge($default, $result);
+        if (!empty($result)) {
+            $result = array_merge($default, $result);
+        } else {
+            self::log($this->id, array(
+                'method'          => __METHOD__,
+                'callback_method' => $method,
+                'app_id'          => $this->app_id,
+                'warning'         => 'empty callback response',
+            ));
+            $result = $default;
+        }
+        self::log($this->id, array(
+            'method'           => __METHOD__,
+            'callback_method'  => $method,
+            'transaction_data' => var_export($transaction_data, true),
+            'result'           => var_export($result, true),
+        ));
+        return $result;
     }
 
     /**
@@ -425,6 +442,7 @@ abstract class waPayment extends waSystemPlugin
 
     protected static function log($module_id, $data)
     {
+        $module_id = strtolower($module_id);
         $filename = 'payment/'.$module_id.'Payment.log';
         $rec = "data:\n";
         if (is_array($data)) {
@@ -435,50 +453,6 @@ abstract class waPayment extends waSystemPlugin
             $rec .= "$data\n";
         }
         waLog::log($rec, $filename);
-    }
-
-    /**
-     *
-     * @param $app_id string
-     * @return waAppPayment
-     * @deprecated
-     */
-    final protected static function getAdapter($app_id, $merchant_id = null)
-    {
-        #Init application
-        waSystem::getInstance($app_id);
-        waSystem::setActive($app_id);
-
-        #check adapter class
-        $app_payment_class = $app_id.'Payment';
-        if (!class_exists($app_payment_class)) {
-            throw new waException(sprintf('Application payment adapter %s not found for %s', $app_payment_class, $app_id));
-        }
-        return new $app_payment_class($merchant_id);
-    }
-
-    /**
-     *
-     * @param $adapter
-     * @return waPayment
-     * @deprecated
-     * @throws waException
-     */
-    final protected function transactionInit(&$adapter = null)
-    {
-        if (!$adapter && $this->app_id) {
-            $adapter = self::getAdapter($this->app_id, $this->merchant_id);
-        } elseif (!$adapter) {
-            throw new waException('Unknown merchant key');
-        }
-        if (!($adapter instanceof waAppPayment)) {
-            throw new waException('Invalid application payment adapter class: avoid waAppPayment, but get %s', is_object($adapter) ? get_class($adapter) : 'not object');
-        }
-        $this->app_adapter = $adapter;
-        $this->merchant_id = $this->app_adapter->getMerchantId();
-        $this->app_id = $this->app_adapter->getAppId();
-        $this->setSettings($this->app_adapter->getMerchantData($this->id, $this->merchant_id));
-        return $this;
     }
 
     /**
@@ -507,23 +481,18 @@ abstract class waPayment extends waSystemPlugin
     {
         $transaction_model = new waTransactionModel();
 
-        $data = array(
-            'paymentsystem_id' => $this->id,
-            'application_id'   => $this->app_id,
-            'merchant_id'      => $this->merchant_id,
-            'update_datetime'  => date('Y-m-d H:i:s')
-        );
-        $data = array_merge($data, $wa_transaction_data);
+        $wa_transaction_data['plugin'] = $this->id;
+        $wa_transaction_data['app_id'] = $this->app_id;
+        $wa_transaction_data['merchant_id'] = $this->key;
 
         $wa_transaction_data['id'] = $transaction_model->insert($wa_transaction_data);
 
         if (!empty($wa_transaction_data['parent_id']) && !empty($wa_transaction_data['parent_state'])) {
             $transaction_model->updateById($wa_transaction_data['parent_id'], array(
                 'state'           => $wa_transaction_data['parent_state'],
-                'update_datetime' => $wa_transaction_data['update_datetime']
+                'update_datetime' => date('Y-m-d H:i:s')
             ));
         }
-
         if ($transaction_raw_data && is_array($transaction_raw_data)) {
             $transaction_data_model = new waTransactionDataModel();
             $transaction_data_model->addGroup($wa_transaction_data['id'], $transaction_raw_data);
@@ -598,36 +567,50 @@ abstract class waPayment extends waSystemPlugin
     }
     /**
      * Convert transaction raw data to formatted data
-     * @TODO: must be abstract
      * @param array $transaction_raw_data
      * @return array $transaction_data
      */
     protected function formalizeData($transaction_raw_data)
     {
+        $transaction_data = array(
+            'plugin'      => $this->id,
+            'merchant_id' => $this->merchant_id,
+            'date_time'   => date('Y-m-d H:i:s'),
+            'result'      => true
+        );
+        return $transaction_data;
     }
 
     /**
      * Adds order [and customer] info to wa_transaction DB table (for cases like Google Checkout)
-     * @param $wa_transaction_id
-     * @param $result
-     * @param $order_id
-     * @param $customer_id
+     * @param $wa_transaction_id int
+     * @param $result array
+     * @param $state string
      * @return bool result
      */
-    final public static function addTransactionData($wa_transaction_id, $order_id = null, $customer_id = null, $state = null)
+    final public static function addTransactionData($wa_transaction_id, $result = null, $state = null)
     {
         $transaction_model = new waTransactionModel();
         $data = array();
-        if ($order_id) {
-            $data['order_id'] = $order_id;
+        if (isset($result['order_id'])) {
+            $data['order_id'] = $result['order_id'];
         }
-        if ($customer_id) {
-            $data['customer_id'] = $customer_id;
+        if (isset($result['customer_id'])) {
+            $data['customer_id'] = $result['customer_id'];
+        }
+        if (isset($result['result'])) {
+            $data['result'] = $result['result'];
+        }
+        if (isset($result['error'])) {
+            $data['error'] = $result['error'];
         }
         if ($state) {
             $data['state'] = $state;
         }
-        return $transaction_model->updateById($wa_transaction_id, $data);
+        if ($data) {
+            return $transaction_model->updateById($wa_transaction_id, $data);
+        }
+        return false;
     }
 
     /**
@@ -652,9 +635,14 @@ abstract class waPayment extends waSystemPlugin
     /**
      * @return string callback relay url
      */
-    public final function getRelayUrl()
+    public final function getRelayUrl($force_https = false)
     {
-        return str_replace('http://', 'https://', wa()->getRootUrl(true)).'payments.php/'.$this->id.'/';
+        $url = wa()->getRootUrl(true).'payments.php/'.$this->id.'/';
+        //TODO detect - is allowed https
+        if ($force_https) {
+            $url = preg_replace('@^http://@', 'https://', $url);
+        }
+        return $url;
     }
 
     /**
@@ -668,7 +656,37 @@ abstract class waPayment extends waSystemPlugin
      */
     public static function execTransactionCallback($request, $module_id)
     {
-        return self::callback($module, $request);
+        return self::callback($module_id, $request);
+    }
+
+    /**
+     *
+     * @return waAppPayment
+     */
+    final protected function getAdapter()
+    {
+        if (!$this->app_adapter) {
+            if (!$this->app_id) {
+                throw new waException('Unknown current application');
+            }
+
+            #Init application
+            waSystem::getInstance($this->app_id);
+            waSystem::setActive($this->app_id);
+
+            #check adapter class
+            $app_class = $this->app_id.'Payment';
+            if (!class_exists($app_class)) {
+                throw new waException(sprintf('Application adapter %s not found for %s', $app_class, $this->app_id));
+            }
+            $instance = new $app_class();
+            if (!($instance instanceof waAppPayment)) {
+                throw new waException(sprintf('Application adapter %s not found for %s', $app_class, $this->app_id));
+            }
+            $this->app_adapter = $instance;
+        }
+
+        return $this->app_adapter;
     }
 
 }

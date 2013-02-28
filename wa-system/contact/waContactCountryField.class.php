@@ -59,8 +59,31 @@ class waContactCountryField extends waContactSelectField
         return 'Country';
     }
 
+    public function getInfo()
+    {
+        $data = parent::getInfo();
+        $data['oOrder'] = array();
+
+        if (isset($this->options['iso_codes']) && is_array($this->options['iso_codes'])) {
+            $iso_codes = array_flip($this->options['iso_codes']);
+        } else {
+            $iso_codes = null;
+        }
+
+        foreach($this->model->allWithFav() as $c) {
+            if (!$iso_codes || isset($iso_codes[$c['iso3letter']]) || $c['iso3letter'] === '') {
+                $data['oOrder'][] = $c['iso3letter'];
+            }
+        }
+        $data['options'][''] = ' ';
+        return $data;
+    }
+
     public function getHtmlOne($params = array(), $attrs = '')
     {
+        if (!$this->model) {
+            $this->model = new waCountryModel();
+        }
         $url = wa()->getRootUrl().'wa-content/img/country/';
         $id = 'wa-country-field-'.uniqid();
 
@@ -68,9 +91,6 @@ class waContactCountryField extends waContactSelectField
             // Try to guess country using locale
             static $default_country = null;
             if ($default_country === null) {
-                if (!$this->model) {
-                    $this->model = new waCountryModel();
-                }
                 $c = $this->model->getByField('iso2letter', strtolower(substr(wa()->getLocale(), -2)));
                 if ($c) {
                     $default_country = $c['iso3letter'];
@@ -79,7 +99,32 @@ class waContactCountryField extends waContactSelectField
             $params['value'] = $default_country;
         }
 
-        $html = parent::getHtmlOne($params, $attrs.' id="'.$id.'"');
+        if (isset($this->options['iso_codes']) && is_array($this->options['iso_codes'])) {
+            $iso_codes = array_flip($this->options['iso_codes']);
+        } else {
+            $iso_codes = null;
+        }
+
+        $selected = false;
+        $value = isset($params['value']) ? $params['value'] : '';
+        $html = '<select '.$attrs.' name="'.$this->getHTMLName($params).'"><option value=""></option>';
+        foreach ($this->model->allWithFav() as $v) {
+            if (!$iso_codes || isset($iso_codes[$v['iso3letter']]) || $v['iso3letter'] === '') {
+                if ($v['name'] === '') {
+                    $html .= '<option disabled>&nbsp;</option>';
+                } else {
+                    if (!$selected && $v['iso3letter'] == $value) {
+                        $at = ' selected';
+                        $selected = true;
+                    } else {
+                        $at = '';
+                    }
+                    $html .= '<option value="'.htmlspecialchars($v['iso3letter']).'"'.$at.'>'.htmlspecialchars($v['name']).'</option>';
+                }
+            }
+        }
+        $html .= '</select>';
+
         $html = '<i style="display:none" class="icon16" style=""></i>'.$html;
         $html .= '<script>if ($) { $(function() { "use strict";
             var f = function () {

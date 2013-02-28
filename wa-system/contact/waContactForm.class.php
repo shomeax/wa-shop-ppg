@@ -286,10 +286,14 @@ class waContactForm
 
             $opts = $this->options;
             $opts['id'] = $field_id;
+
+            if (empty($this->contact)) {
+                $this->contact = new waContact();
+            }
             if ($this->post()) {
-                $opts['value'] = $this->post($field_id);
-            } else {
-                $opts['value'] = ifset($this->values[$field_id]);
+                $opts['value'] = $this->fields[$field_id]->set($this->contact, $this->post($field_id), array());
+            } else if (isset($this->values[$field_id])) {
+                $opts['value'] = $this->fields[$field_id]->set($this->contact, $this->values[$field_id], array());
             }
 
             // HTML with no errors?

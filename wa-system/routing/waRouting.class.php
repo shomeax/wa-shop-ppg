@@ -414,7 +414,11 @@ class waRouting
                         if ($j == $max && $this->getDomain() && $domain != $this->getDomain() && $result) {
                         } else {
                             $max = $j;
-                            $result = $root_url.self::clearUrl($u);
+                            $u = self::clearUrl($u);
+                            if (substr($result, -1) == '/' && substr($u, 0, 1) == '/') {
+                                $u = substr($u, 1);
+                            }
+                            $result = $root_url.$u;
                         }
                     }
                 }

@@ -20,44 +20,44 @@
 class waInstaller
 {
     private static $depended_classes = array(
-		'pear'				=> 'wa-installer/lib/vendors/PEAR/PEAR.php',
-		'archive_tar'		=> 'wa-installer/lib/vendors/PEAR/Tar.php',
-		'durabletar'		=> 'wa-installer/lib/transport/durabletar.class.php',
+        'pear'        => 'wa-installer/lib/vendors/PEAR/PEAR.php',
+        'archive_tar' => 'wa-installer/lib/vendors/PEAR/Tar.php',
+        'durabletar'  => 'wa-installer/lib/transport/durabletar.class.php',
     );
 
     private static $registered = false;
 
-    const LOG_DEBUG		 = 1;
-    const LOG_TRACE		 = 2;
-    const LOG_WARNING	 = 3;
-    const LOG_ERROR		 = 4;
+    const LOG_DEBUG = 1;
+    const LOG_TRACE = 2;
+    const LOG_WARNING = 3;
+    const LOG_ERROR = 4;
 
     const TIMEOUT_SOCKET = 15;
     const TIMEOUT_RESUME = 60;
 
-    const PATH_LOG		 = 'wa-log/wa-installer/installer.log';
-    const PATH_STATE	 = 'wa-log/wa-installer/installer.state';
-    const PATH_FSTATE	 = 'wa-log/wa-installer/installer.fstate';
-    const PATH_UPDATE	 = 'wa-data/protected/wa-installer/';
-    const CONFIG_PATHS	 = 'wa-installer/lib/config/path.php';
-    const HASH_PATH		 = '.files.md5';
+    const PATH_LOG = 'wa-log/wa-installer/installer.log';
+    const PATH_STATE = 'wa-log/wa-installer/installer.state';
+    const PATH_FSTATE = 'wa-log/wa-installer/installer.fstate';
+    const PATH_UPDATE = 'wa-data/protected/wa-installer/';
+    const CONFIG_PATHS = 'wa-installer/lib/config/path.php';
+    const HASH_PATH = '.files.md5';
 
-    const STATE_HEARTBEAT	 = 'heartbeat';
-    const STATE_COMPLETE	 = 'complete';
-    const STATE_RESUME		 = 'resume';
-    const STATE_WAIT		 = 'wait';
-    const STATE_ERROR		 = 'error';
+    const STATE_HEARTBEAT = 'heartbeat';
+    const STATE_COMPLETE = 'complete';
+    const STATE_RESUME = 'resume';
+    const STATE_WAIT = 'wait';
+    const STATE_ERROR = 'error';
 
-    const STAGE_FLUSH		 = 'flush';
-    const STAGE_NONE		 = 'none';
-    const STAGE_PREPARE		 = 'prepare';
-    const STAGE_COPY		 = 'copy';
-    const STAGE_DOWNLOAD	 = 'download';
-    const STAGE_EXTRACT		 = 'extract';
-    const STAGE_REPLACE		 = 'replace';
-    const STAGE_CLEANUP		 = 'cleanup';
-    const STAGE_VERIFY		 = 'verify';
-    const STAGE_UPDATE		 = 'update';
+    const STAGE_FLUSH = 'flush';
+    const STAGE_NONE = 'none';
+    const STAGE_PREPARE = 'prepare';
+    const STAGE_COPY = 'copy';
+    const STAGE_DOWNLOAD = 'download';
+    const STAGE_EXTRACT = 'extract';
+    const STAGE_REPLACE = 'replace';
+    const STAGE_CLEANUP = 'cleanup';
+    const STAGE_VERIFY = 'verify';
+    const STAGE_UPDATE = 'update';
 
     private $log_level;
     private $log_handler;
@@ -74,29 +74,29 @@ class waInstaller
 
     function __construct($log_level = self::LOG_WARNING, $thread_id = null)
     {
-        $this->log_level = max(self::LOG_DEBUG,min(self::LOG_ERROR,$log_level));
-        if(!isset(self::$root_path)){
-            self::$root_path =  self::formatPath(dirname(__FILE__)).'/';
-            self::$root_path = preg_replace('@(/)wa-installer/lib/classes/?$@','$1',self::$root_path);
+        $this->log_level = max(self::LOG_DEBUG, min(self::LOG_ERROR, $log_level));
+        if (!isset(self::$root_path)) {
+            self::$root_path = self::formatPath(dirname(__FILE__)) . '/';
+            self::$root_path = preg_replace('@(/)wa-installer/lib/classes/?$@', '$1', self::$root_path);
         }
-        if(!isset(self::$update_path)){
+        if (!isset(self::$update_path)) {
             self::$update_path = self::PATH_UPDATE;
-            if(file_exists(self::$root_path.self::CONFIG_PATHS)){
-                $paths = include(self::$root_path.self::CONFIG_PATHS);
-                if(is_array($paths) && isset($paths['update_path']) && $paths['update_path']) {
+            if (file_exists(self::$root_path . self::CONFIG_PATHS)) {
+                $paths = include(self::$root_path . self::CONFIG_PATHS);
+                if (is_array($paths) && isset($paths['update_path']) && $paths['update_path']) {
                     self::$update_path = $paths['update_path'];
                 }
             }
 
         }
-        $this->thread_id = $thread_id?$thread_id:self::makeThread();
+        $this->thread_id = $thread_id ? $thread_id : self::makeThread();
 
-        if(!self::$registered){
+        if (!self::$registered) {
             ini_set('unserialize_callback_func', 'spl_autoload_call');
-            ini_set('include_path','./');
+            ini_set('include_path', './');
             if (false === spl_autoload_register(array('waInstaller', 'autoload'))) {
                 throw new Exception(sprintf('Unable to register %s::autoload as an autoloading method.', get_class(self::getInstance())));
-            }else{
+            } else {
                 self::$registered = true;
             }
         }
@@ -104,12 +104,12 @@ class waInstaller
 
     public static function makeThread()
     {
-        return strtoupper(dechex(time()%4096));
+        return strtoupper(dechex(time() % 4096));
     }
 
     public function getLogPath()
     {
-        return self::$root_path.self::PATH_LOG;
+        return self::$root_path . self::PATH_LOG;
     }
 
     /**
@@ -137,47 +137,47 @@ class waInstaller
      */
     public function update($update_list)
     {
-        try{
-            $update_path = self::$update_path.$this->thread_id.'/';
-            $download_path = $update_path.'download/';
+        try {
+            $update_path = self::$update_path . $this->thread_id . '/';
+            $download_path = $update_path . 'download/';
 
             $targets = array();
-            foreach($update_list as &$update){
-                $update['target'] = self::formatPath($update['target']).'/';
-                $update['target'] = preg_replace('@(^|/)\.\./@','/',$update['target']);
-                $update['extract_path'] = $update_path.'update/'.$update['target'];
-                if(!isset($update['pass'])){
+            foreach ($update_list as & $update) {
+                $update['target'] = self::formatPath($update['target']) . '/';
+                $update['target'] = preg_replace('@(^|/)\.\./@', '/', $update['target']);
+                $update['extract_path'] = $update_path . 'update/' . $update['target'];
+                if (!isset($update['pass'])) {
                     $update['pass'] = false;
                 }
-                if(!isset($update['skipped'])){
+                if (!isset($update['skipped'])) {
                     $update['skipped'] = false;
                 }
                 $founded = false;
-                foreach($targets as $id=>$target) {
-                    if(strpos($target,$update['target']) === 0){
+                foreach ($targets as $id => $target) {
+                    if (strpos($target, $update['target']) === 0) {
                         $founded = true;
-                        if(strlen($target)>strlen($update['target'])) {
+                        if (strlen($target) > strlen($update['target'])) {
                             $targets[$id] = $update['target'];
                         }
                         break;
 
-                    }elseif(strpos($update['target'],$target) === 0) {
+                    } elseif (strpos($update['target'], $target) === 0) {
                         $founded = true;
                         break;
                     }
 
                 }
-                if(!$founded) {
+                if (!$founded) {
                     $targets[] = $update['target'];
                 }
                 unset($update);
             }
 
-            foreach($update_list as &$update) {
+            foreach ($update_list as & $update) {
                 $update['dependent'] = false;
-                foreach($targets as $id=>$target) {
-                    if(strpos($update['target'], $target) === 0) {
-                        if(strlen($target)<strlen($update['target'])) {
+                foreach ($targets as $id => $target) {
+                    if (strpos($update['target'], $target) === 0) {
+                        if (strlen($target) < strlen($update['target'])) {
                             $update['dependent'] = true;
                         }
                         break;
@@ -187,15 +187,13 @@ class waInstaller
                 unset($update);
             }
 
-
-
-            $this->writeLog(__METHOD__.' tree',self::LOG_DEBUG,array('targets'=>$targets,'update_list'=>$update_list));
+            $this->writeLog(__METHOD__ . ' tree', self::LOG_DEBUG, array('targets' => $targets, 'update_list' => $update_list));
 
             #sort
-            uasort($update_list,array(__CLASS__,'sortUpdateList'));
+            uasort($update_list, array(__CLASS__, 'sortUpdateList'));
 
             $session_id = session_id();
-            if($session_id){
+            if ($session_id) {
                 if (function_exists('wa') && method_exists($wa = wa(), 'getStorage')) {
                     $wa->getStorage()->close();
                 } else {
@@ -203,19 +201,19 @@ class waInstaller
                 }
             }
 
-            if($this->log_level>=self::LOG_DEBUG){
-                $this->writeLog('callback',self::LOG_DEBUG,self::debug_backtrace_custom());
+            if ($this->log_level >= self::LOG_DEBUG) {
+                $this->writeLog('callback', self::LOG_DEBUG, self::debug_backtrace_custom());
             }
 
             $error_level = error_reporting();
             $display_errors = ini_get('display_errors');
             $error_reporting = ini_get('error_reporting');
-            @ini_set('display_errors',true);
-            @ini_set('error_reporting',E_ALL & ~E_NOTICE);
+            @ini_set('display_errors', true);
+            @ini_set('error_reporting', E_ALL & ~E_NOTICE);
             error_reporting(E_ALL & ~E_NOTICE);
             ignore_user_abort(true);
 
-            $this->writeLog('Register error handler',self::LOG_TRACE,ob_start(__CLASS__.'::obHandler'));
+            $this->writeLog('Register error handler', self::LOG_TRACE, ob_start(__CLASS__ . '::obHandler'));
             self::$ob_skip = false;
 
             $resume = false;
@@ -224,117 +222,114 @@ class waInstaller
 
             //TODO allow skip some update parts
 
-            switch($resume){
+            switch ($resume) {
                 case false:
                 case self::STAGE_FLUSH:
-                case self::STAGE_NONE:{
+                case self::STAGE_NONE:
                     $this->setFullState(null);
-                }
-                case self::STAGE_PREPARE:{
-                    foreach($update_list as $chunk_id=>&$update) {
-                        if($update['dependent']) {
+                case self::STAGE_PREPARE:
+                    foreach ($update_list as $chunk_id => & $update) {
+                        if ($update['dependent']) {
                             $update['current_size'] = false;
-                        }else {
-                            $this->current_chunk_id = isset($update['slug'])?$update['slug']:$chunk_id;
-                            $update['current_size'] = $this->run(self::STAGE_PREPARE, $update['pass'], $download_path, $update['extract_path'],$update['target']);
+                        } else {
+                            $this->current_chunk_id = isset($update['slug']) ? $update['slug'] : $chunk_id;
+                            $update['current_size'] = $this->run(self::STAGE_PREPARE, $update['pass'], $download_path, $update['extract_path'], $update['target']);
                         }
                     }
                     unset($update);
-                }
-                case self::STAGE_COPY:{
-                    foreach($update_list as $chunk_id=>&$update) {
-                        if($update['skipped'])continue;
-                        if(file_exists(self::$root_path.$update['target']) && !$update['dependent']) {
-                            $this->current_chunk_id = isset($update['slug'])?$update['slug']:$chunk_id;
-                            $result = $this->run(self::STAGE_COPY,$update['pass'],$update['target'],$update['extract_path'],$update['current_size']);
-                            if(!$result&&$update['pass']){
+                case self::STAGE_COPY:
+                    foreach ($update_list as $chunk_id => & $update) {
+                        if ($update['skipped'])
+                            continue;
+                        if (file_exists(self::$root_path . $update['target']) && !$update['dependent']) {
+                            $this->current_chunk_id = isset($update['slug']) ? $update['slug'] : $chunk_id;
+                            $result = $this->run(self::STAGE_COPY, $update['pass'], $update['target'], $update['extract_path'], $update['current_size']);
+                            if (!$result && $update['pass']) {
                                 $update['skipped'] = true;
                             }
                         }
                     }
                     unset($update);
-                }
-                case self::STAGE_DOWNLOAD:{
-                    foreach($update_list as $chunk_id=>&$update){
-                        if($update['skipped'])continue;
-                        $this->current_chunk_id = isset($update['slug'])?$update['slug']:$chunk_id;
+                case self::STAGE_DOWNLOAD:
+                    foreach ($update_list as $chunk_id => & $update) {
+                        if ($update['skipped'])
+                            continue;
+                        $this->current_chunk_id = isset($update['slug']) ? $update['slug'] : $chunk_id;
                         //TODO check name for $download_path
-                        $update['archive'] = $this->run(self::STAGE_DOWNLOAD,$update['pass'],$update['source'],$download_path,isset($update['md5'])?$update['md5']:false);
-                        if(!$update['archive']&&$update['pass']){
+                        $update['archive'] = $this->run(self::STAGE_DOWNLOAD, $update['pass'], $update['source'], $download_path, isset($update['md5']) ? $update['md5'] : false);
+                        if (!$update['archive'] && $update['pass']) {
                             $update['skipped'] = true;
                         }
                     }
                     unset($update);
-                }
-                case self::STAGE_EXTRACT:{
-                    foreach($update_list as $chunk_id=>&$update) {
-                        if($update['skipped'])continue;
-                        $this->current_chunk_id = isset($update['slug'])?$update['slug']:$chunk_id;
-                        $result = $this->run(self::STAGE_EXTRACT,$update['pass'],$update['archive'],$update['extract_path'],$update['target']);
-                        if(!$result&&$update['pass']){
+                case self::STAGE_EXTRACT:
+                    foreach ($update_list as $chunk_id => & $update) {
+                        if ($update['skipped'])
+                            continue;
+                        $this->current_chunk_id = isset($update['slug']) ? $update['slug'] : $chunk_id;
+                        $result = $this->run(self::STAGE_EXTRACT, $update['pass'], $update['archive'], $update['extract_path'], $update['target']);
+                        if (!$result && $update['pass']) {
                             $update['skipped'] = true;
                         }
                     }
                     unset($update);
-                }
-                case self::STAGE_REPLACE:{
-                    foreach($update_list as $chunk_id=>&$update) {
-                        if($update['skipped'] || $update['dependent'])continue;
-                        $this->current_chunk_id = isset($update['slug'])?$update['slug']:$chunk_id;
-                        $update['backup'] = $this->run(self::STAGE_REPLACE,$update['pass'],$update['extract_path'],$update['target']);
-                        if(!$update['backup']&&$update['pass']){
+                case self::STAGE_REPLACE:
+                    foreach ($update_list as $chunk_id => & $update) {
+                        if ($update['skipped'] || $update['dependent'])
+                            continue;
+                        $this->current_chunk_id = isset($update['slug']) ? $update['slug'] : $chunk_id;
+                        $update['backup'] = $this->run(self::STAGE_REPLACE, $update['pass'], $update['extract_path'], $update['target']);
+                        if (!$update['backup'] && $update['pass']) {
                             $update['skipped'] = true;
                         }
                     }
                     unset($update);
-                }
-                case self::STAGE_CLEANUP:{
-                    foreach($update_list as $chunk_id=>&$update) {
-                        $this->current_chunk_id = isset($update['slug'])?$update['slug']:$chunk_id;
+                case self::STAGE_CLEANUP:
+                    foreach ($update_list as $chunk_id => & $update) {
+                        $this->current_chunk_id = isset($update['slug']) ? $update['slug'] : $chunk_id;
                         $paths = array();
-                        $paths[$update_path]=true;
-                        $cache_path = 'wa-cache/apps/'.($this->current_chunk_id=='wa-system'?'webasyst':$this->current_chunk_id);
+                        $paths[$update_path] = true;
+                        $cache_path = 'wa-cache/apps/' . ($this->current_chunk_id == 'wa-system' ? 'webasyst' : $this->current_chunk_id);
                         $paths[$cache_path] = true;
-                        $this->run(self::STAGE_CLEANUP,false,$paths);
+                        $this->run(self::STAGE_CLEANUP, false, $paths);
                     }
                     unset($update);
-                }
-                case self::STAGE_VERIFY:{
-                    foreach($update_list as $chunk_id=>&$update) {
-                        if($update['skipped'])continue;
-                        if(!isset($update['verify']))continue;
-                        if(strpos($update['target'],'wa-config') !== false){
+                case self::STAGE_VERIFY:
+                    foreach ($update_list as $chunk_id => & $update) {
+                        if ($update['skipped'])
+                            continue;
+                        if (!isset($update['verify']))
+                            continue;
+                        if (strpos($update['target'], 'wa-config') !== false) {
                             $update['verify'] = false;
                         }
-                        $this->current_chunk_id = isset($update['slug'])?$update['slug']:$chunk_id;
-                        $this->run(self::STAGE_VERIFY,false,$update['target'],isset($update['verify']) && $update['verify']);
+                        $this->current_chunk_id = isset($update['slug']) ? $update['slug'] : $chunk_id;
+                        $this->run(self::STAGE_VERIFY, false, $update['target'], isset($update['verify']) && $update['verify']);
 
                     }
                     unset($update);
-                }
-                case self::STAGE_UPDATE:{
-                    foreach($update_list as $chunk_id=>&$update){
-                        if($update['skipped'])continue;
-                        $this->current_chunk_id = isset($update['slug'])?$update['slug']:$chunk_id;
-                        $this->run(self::STAGE_UPDATE,false);
+                case self::STAGE_UPDATE:
+                    foreach ($update_list as $chunk_id => & $update) {
+                        if ($update['skipped'])
+                            continue;
+                        $this->current_chunk_id = isset($update['slug']) ? $update['slug'] : $chunk_id;
+                        $this->run(self::STAGE_UPDATE, false);
                     }
                     unset($update);
-                }
-                break;
-                default:{
+                    break;
+                default:
                     throw new Exception("Invalid resume state {$resume}");
                     break;
-                }
             }
             //$this->current_stage = 'update_'.self::STATE_COMPLETE;
             //$this->current_chunk_id = 'total';
             //$this->setState();
-            $this->writeLog(__METHOD__,self::LOG_DEBUG,array('source'=>$update_list));
+            $this->writeLog(__METHOD__, self::LOG_DEBUG, array('source' => $update_list));
             self::$ob_skip = true;
             error_reporting($error_level);
             @ini_set('display_errors', $display_errors);
             @ini_set('error_reporting', $error_reporting);
-            if($session_id){
+            if ($session_id) {
                 if ($wa) {
                     $wa->getStorage()->open();
                 } else {
@@ -342,10 +337,10 @@ class waInstaller
                 }
             }
             return $update_list;
-        }catch(Exception $ex){
+        } catch (Exception $ex) {
             $this->cleanupPath($update_path, true);
-            $this->writeLog($ex->getMessage(), self::LOG_WARNING, array('source'=>$update_list));
-            if($session_id){
+            $this->writeLog($ex->getMessage(), self::LOG_WARNING, array('source' => $update_list));
+            if ($session_id) {
                 if ($wa) {
                     $wa->getStorage()->open();
                 } else {
@@ -361,12 +356,12 @@ class waInstaller
     {
         try {
             //reset state
-            $this->current_stage = __FUNCTION__.'_'.self::STATE_HEARTBEAT;
+            $this->current_stage = __FUNCTION__ . '_' . self::STATE_HEARTBEAT;
             $this->setState();
             $this->cleanupPath(self::$update_path);
-            $this->current_stage = __FUNCTION__.'_'.self::STATE_COMPLETE;
+            $this->current_stage = __FUNCTION__ . '_' . self::STATE_COMPLETE;
             $this->setState();
-        }catch(Exception $ex) {
+        } catch (Exception $ex) {
             $this->writeLog($ex->getMessage());
             throw $ex;
         }
@@ -375,14 +370,14 @@ class waInstaller
     private static function sortUpdateList($a, $b)
     {
         if ($a['pass'] == $b['pass']) {
-            if(preg_match('@wa-apps\/@',$a['target'])){
-                if(preg_match('@wa-apps\/@',$b['target'])){
+            if (preg_match('@wa-apps\/@', $a['target'])) {
+                if (preg_match('@wa-apps\/@', $b['target'])) {
                     //TODO dependent workaround
                     return 0;
-                }else{
+                } else {
                     return 1;
                 }
-            }else{
+            } else {
                 return 0;
             }
         }
@@ -395,32 +390,32 @@ class waInstaller
      * @param $pass
      * @return mixed
      */
-    private function run($action,$pass)
+    private function run($action, $pass)
     {
         static $allowed_methods = array();
-        if(!$allowed_methods){
+        if (!$allowed_methods) {
             $allowed_methods = get_class_methods(__CLASS__);
         }
         $args = func_get_args();
         $action = array_shift($args);
         $pass = array_shift($args);
-        try{
-            $method_name = 'stage'.ucfirst($action);
-            if(!in_array($method_name,$allowed_methods)){
+        try {
+            $method_name = 'stage' . ucfirst($action);
+            if (!in_array($method_name, $allowed_methods)) {
                 throw new Excpetion("Not allowed stage {$action}");
             }
-            $this->current_stage = $action.'_'.self::STATE_HEARTBEAT;
+            $this->current_stage = $action . '_' . self::STATE_HEARTBEAT;
             $this->setState();
-            $result = call_user_func_array(array(&$this,$method_name),$args);
-            $this->current_stage = $action.'_'.self::STATE_COMPLETE;
+            $result = call_user_func_array(array(&$this, $method_name), $args);
+            $this->current_stage = $action . '_' . self::STATE_COMPLETE;
             $this->setState();
-        }catch(Exception $ex){
-            $this->writeLog(__METHOD__.' args',self::LOG_DEBUG,$args);
-            $this->current_stage = $action.'_'.self::STATE_ERROR;
-            $this->setState(array('error'=>$ex->getMessage()));
-            if($pass) {
+        } catch (Exception $ex) {
+            $this->writeLog(__METHOD__ . ' args', self::LOG_DEBUG, $args);
+            $this->current_stage = $action . '_' . self::STATE_ERROR;
+            $this->setState(array('error' => $ex->getMessage()));
+            if ($pass) {
                 $result = false;
-            }else {
+            } else {
                 throw $ex;
             }
         }
@@ -432,7 +427,7 @@ class waInstaller
         /**
          * @todo passthrow internal methods like setState and adjustStageChunk at callback
          */
-        throw new Exception("Couldn't exec method {$method} of class ".__CLASS__);
+        throw new Exception("Couldn't exec method {$method} of class " . __CLASS__);
     }
 
     /**
@@ -445,17 +440,16 @@ class waInstaller
      */
     private function stagePrepare($download_path, $extract_path, $target_path)
     {
-        if(file_exists(self::$root_path.$extract_path)){
+        if (file_exists(self::$root_path . $extract_path)) {
             $this->cleanupPath($extract_path);
-        }else{
+        } else {
             $this->mkdir($extract_path);
         }
         $this->cleanupPath($download_path);
 
-
         $target_path = self::formatPath($target_path);
         $size = 0;
-        if(file_exists(self::$root_path.$target_path)) {
+        if (file_exists(self::$root_path . $target_path)) {
             $size = $this->checkRequiredSpace($target_path);
             /*
              $stop_paths = array('/.svn','/.git',$target_path.'/.svn/',$target_path.'/.git/');
@@ -480,48 +474,48 @@ class waInstaller
      */
     private function stageDownload($source_file, $temporary_path, $md5 = null)
     {
-        try{
+        try {
             $header_md5 = null;
 
-            if(preg_match('@^https?://@', $source_file) && $this->curlAvailable()) {
+            if (preg_match('@^https?://@', $source_file) && $this->curlAvailable()) {
                 try {
-                    list($target_file,$content_length) = $this->downloadCurl($source_file, $temporary_path);
-                } catch(Exception $ex) {
-                    $this->writeLog($ex->getMessage(),self::LOG_ERROR);
+                    list($target_file, $content_length) = $this->downloadCurl($source_file, $temporary_path);
+                } catch (Exception $ex) {
+                    $this->writeLog($ex->getMessage(), self::LOG_ERROR);
                     //attemp to download via fopen
-                    list($target_file,$content_length,$header_md5) = $this->downloadStandart($source_file, $temporary_path);
+                    list($target_file, $content_length, $header_md5) = $this->downloadStandart($source_file, $temporary_path);
                 }
             } else {
-                list($target_file, $content_length,$header_md5) = $this->downloadStandart($source_file, $temporary_path);
+                list($target_file, $content_length, $header_md5) = $this->downloadStandart($source_file, $temporary_path);
             }
 
             //TODO check target file size (and retry to download it if uncomplete)
-            if($content_length && ($real_content_length = filesize($target_file)) && ($content_length != $real_content_length)){
-                throw new Exception(sprintf(_w("Invalid file size. Expected %d but get %d"),$content_length,$real_content_length));
+            if ($content_length && ($real_content_length = filesize($target_file)) && ($content_length != $real_content_length)) {
+                throw new Exception(sprintf(_w("Invalid file size. Expected %d but get %d"), $content_length, $real_content_length));
             }
 
             //check content
-            if($real_content_length&&($real_content_length<1024)&&($decoded = base64_decode(file_get_contents($target_file),true))){
+            if ($real_content_length && ($real_content_length < 1024) && ($decoded = base64_decode(file_get_contents($target_file), true))) {
 
                 $message = unserialize($decoded);
-                $this->writeLog('Invalid server response while file download',self::LOG_ERROR,$message);
+                $this->writeLog('Invalid server response while file download', self::LOG_ERROR, $message);
                 throw new Exception(_w('Invalid server response while file download'));
             }
-            if($header_md5) {
-                if(($header_md5 != $md5) && $md5) {
-                    $this->writeLog(sprintf(_w('MD5 hash are changed from %s to %s'),$md5, $header_md5),self::LOG_WARNING);
+            if ($header_md5) {
+                if (($header_md5 != $md5) && $md5) {
+                    $this->writeLog(sprintf(_w('MD5 hash are changed from %s to %s'), $md5, $header_md5), self::LOG_WARNING);
                 }
                 $md5 = $header_md5;
             }
 
             //check MD5 file hash
-            if($md5 && ($real_md5 = md5_file($target_file)) &&  (strcasecmp ($md5,$real_md5)!=0)){
+            if ($md5 && ($real_md5 = md5_file($target_file)) && (strcasecmp($md5, $real_md5) != 0)) {
                 throw new Exception(sprintf(_w("Invalid file md5 hash. Expected %s but get %s"), $md5, $real_md5));
             }
             return $target_file;
-        }catch(Exception $ex) {
+        } catch (Exception $ex) {
             //write state and error message
-            if($target_file && ($target_file != $source_file) && file_exists($target_file)){
+            if ($target_file && ($target_file != $source_file) && file_exists($target_file)) {
                 @unlink($target_file);
             }
             throw $ex;
@@ -533,7 +527,7 @@ class waInstaller
         $source_stream = null;
         $target_stream = null;
         try {
-            $this->writeLog(__METHOD__.' :download via fopen', self::LOG_TRACE);
+            $this->writeLog(__METHOD__ . ' :download via fopen', self::LOG_TRACE);
             /**
              * @var integer describe download file size
              */
@@ -548,90 +542,93 @@ class waInstaller
             $source_stream = @fopen($source_file, 'r');
             @ini_set('default_socket_timeout', $default_socket_timeout);
 
-            if(!$source_stream) {
+            if (!$source_stream) {
                 $hint = 'for details see update log;';
-                if(preg_match('@^([a-z\.]+)://@',$source_file,$matches)) {
+                if (preg_match('@^([a-z\.]+)://@', $source_file, $matches)) {
                     $wrappers = stream_get_wrappers();
-                    if(!in_array($matches[1],$wrappers)) {
+                    if (!in_array($matches[1], $wrappers)) {
                         $hint .= " Stream {$matches[1]} not supported;";
                     }
                 }
-                if(preg_match('@^https?://@', $source_file) && !ini_get('allow_url_fopen')) {
+                if (preg_match('@^https?://@', $source_file) && !ini_get('allow_url_fopen')) {
                     $hint .= " PHP ini option 'allow_url_fopen' are disabled;";
                 }
 
-                if(!empty($http_response_header)) {
-                    foreach($http_response_header as $header) {
+                if (!empty($http_response_header)) {
+                    foreach ($http_response_header as $header) {
                         if (preg_match('@^status:\s+(\d+)\s+(.+)$@i', $header, $matches)) {
                             $hint .= " {$matches[1]} {$matches[2]}";
                             $hint .= self::getHintByStatus($matches[1]);
+                            break;
                         }
                     }
                 }
 
-
                 throw new Exception("Error while opening source stream [{$source_file}]. Hint: {$hint}");
+            } elseif (!empty($http_response_header)) {
+                //XXX ????
+                foreach ($http_response_header as $header) {
+                    if (preg_match('@^X-license:\s+(\w+)$@i', $header, $matches)) {
+                        waInstallerApps::setGenericOptions(array('license_key' => $matches[1]));
+                        break;
+                    }
+                }
             }
 
             $this->setState();
 
-            if(stream_is_local($source_stream)) {
+            if (stream_is_local($source_stream)) {
                 fclose($source_stream);
                 $target_file = $source_file;
-                $this->writeLog(__METHOD__.' :Source file is local', self::LOG_TRACE,$target_file);
-            }else {
+                $this->writeLog(__METHOD__ . ' :Source file is local', self::LOG_TRACE, $target_file);
+            } else {
                 //TODO check target path rights
-                $target_file = self::formatPath(self::$root_path.$temporary_path.'/'.$name.'');
+                $target_file = self::formatPath(self::$root_path . $temporary_path . '/' . $name . '');
                 $this->mkdir($temporary_path);
-                $target_stream=@fopen($target_file,'wb');
-                if(!$target_stream) {
+                $target_stream = @fopen($target_file, 'wb');
+                if (!$target_stream) {
                     throw new Exception("Error while write temporal download file {$target_file}");
                 }
-                $this->writeLog(__METHOD__.' :Source file is distant', self::LOG_TRACE, array('source'=>$source_file,'target'=>$target_file));
+                $this->writeLog(__METHOD__ . ' :Source file is distant', self::LOG_TRACE, array('source' => $source_file, 'target' => $target_file));
 
                 //{{Read source properties
                 list($content_length, $download_content_length, $buf) = $this->getStreamInfo($source_stream);
 
                 //}}Read source properties
-                $this->setState(array('stage_value'=>$content_length,'stage_current_value'=>$download_content_length));
-                if($buf){
-                    fwrite($target_stream,$buf);
+                $this->setState(array('stage_value' => $content_length, 'stage_current_value' => $download_content_length));
+                if ($buf) {
+                    fwrite($target_stream, $buf);
                 }
 
-
-                $download_chunk_size=max($content_length?ceil($content_length/10240000)*102400:102400,102400);
+                $download_chunk_size = max($content_length ? ceil($content_length / 10240000) * 102400 : 102400, 102400);
                 $retry_counter = 0;
-                while(
-                ($delta=stream_copy_to_stream($source_stream,$target_stream,$download_chunk_size))
-                || ($content_length && ($download_content_length<$content_length) && (++$retry_counter<20) )
-                || (!$content_length && (++$retry_counter<3) )
-                ){
-                    if($delta) {
-                        $download_content_length+=$delta;
-                        if($retry_counter) {
-                            $this->writeLog(__METHOD__.' complete server data transfer',self::LOG_TRACE,array('content_length'=>$content_length,'download_content_length'=>$download_content_length,'retry_counter'=>$retry_counter,'delta'=>$delta));
+                while (($delta = stream_copy_to_stream($source_stream, $target_stream, $download_chunk_size)) || ($content_length && ($download_content_length < $content_length) && (++$retry_counter < 20)) || (!$content_length && (++$retry_counter < 3))) {
+                    if ($delta) {
+                        $download_content_length += $delta;
+                        if ($retry_counter) {
+                            $this->writeLog(__METHOD__ . ' complete server data transfer', self::LOG_TRACE, array('content_length' => $content_length, 'download_content_length' => $download_content_length, 'retry_counter' => $retry_counter, 'delta' => $delta));
                             $retry_counter = 0;
                         }
-                    }else {
-                        $this->writeLog(__METHOD__.' wait server data transfer',self::LOG_TRACE,array('content_length'=>$content_length,'download_content_length'=>$download_content_length,'retry_counter'=>$retry_counter,'delta'=>$delta));
+                    } else {
+                        $this->writeLog(__METHOD__ . ' wait server data transfer', self::LOG_TRACE, array('content_length' => $content_length, 'download_content_length' => $download_content_length, 'retry_counter' => $retry_counter, 'delta' => $delta));
                         sleep(3);
                     }
-                    $performance = $this->setState(array('stage_current_value'=>$download_content_length, 'debug'=>$download_chunk_size));
+                    $performance = $this->setState(array('stage_current_value' => $download_content_length, 'debug' => $download_chunk_size));
                     //adjust download chunk size
                     //MAX = 8Mb/s MIN = 100Kb/s step 10Kb
-                    $download_chunk_size = $this->adjustStageChunk($download_chunk_size,$performance,__FUNCTION__,10240,102400,8388608);
+                    $download_chunk_size = $this->adjustStageChunk($download_chunk_size, $performance, __FUNCTION__, 10240, 102400, 8388608);
                 }
 
                 fclose($source_stream);
                 fclose($target_stream);
             }
-            return array($target_file,$content_length);
-        }catch(Exception $ex) {
+            return array($target_file, $content_length);
+        } catch (Exception $ex) {
             //write state and error message
-            if($source_stream && is_resource($source_stream)) {
+            if ($source_stream && is_resource($source_stream)) {
                 fclose($source_stream);
             }
-            if($target_stream && is_resource($target_stream)){
+            if ($target_stream && is_resource($target_stream)) {
                 fclose($target_stream);
             }
             throw $ex;
@@ -641,12 +638,12 @@ class waInstaller
     private function downloadCurl($source_file, $temporary_path)
     {
         try {
-            $name = md5(preg_replace('/(\?.*)$/','',$source_file));
-            $target_file = self::formatPath(self::$root_path.$temporary_path.'/'.$name);
-            $this->writeLog(__METHOD__.' :download via cURL',self::LOG_TRACE, array('source'=>$source_file,'target'=>$target_file));
+            $name = md5(preg_replace('/(\?.*)$/', '', $source_file));
+            $target_file = self::formatPath(self::$root_path . $temporary_path . '/' . $name);
+            $this->writeLog(__METHOD__ . ' :download via cURL', self::LOG_TRACE, array('source' => $source_file, 'target' => $target_file));
             $this->mkdir($temporary_path);
-            $target_stream=@fopen($target_file,'wb');
-            if(!$target_stream){
+            $target_stream = @fopen($target_file, 'wb');
+            if (!$target_stream) {
                 throw new Exception("Error while write temporal download file {$target_file}");
             }
 
@@ -655,14 +652,14 @@ class waInstaller
             $ch = $this->getCurl($source_file);
 
             $this->stage_data_stack = array(
-					'stream'=>&$target_stream,
-					'stage_value'=>&$content_length,
-					'stage_current_value'=>&$download_content_length,
+                'stream'              => & $target_stream,
+                'stage_value'         => & $content_length,
+                'stage_current_value' => & $download_content_length,
             );
 
             $res = curl_exec($ch);
-            if ($errno =  curl_errno($ch)){
-                $message = "Curl error: {$errno}# ".curl_error($ch)." at [{$source_file}]";
+            if ($errno = curl_errno($ch)) {
+                $message = "Curl error: {$errno}# " . curl_error($ch) . " at [{$source_file}]";
                 throw new Exception($message);
             }
 
@@ -674,14 +671,14 @@ class waInstaller
             fclose($target_stream);
             //list($content_length,$download_content_length,$buf) = $this->getStreamInfo($source_stream);
 
-            $this->setState(array('stage_value'=>$content_length,'stage_current_value'=>$download_content_length));
+            $this->setState(array('stage_value' => $content_length, 'stage_current_value' => $download_content_length));
 
-            return array($target_file,$content_length);
-        }catch(Exception $ex){
-            if($ch){
+            return array($target_file, $content_length);
+        } catch (Exception $ex) {
+            if ($ch) {
                 curl_close($ch);
             }
-            if($target_stream && is_resource($target_stream)){
+            if ($target_stream && is_resource($target_stream)) {
                 fclose($target_stream);
             }
 
@@ -693,43 +690,41 @@ class waInstaller
     {
 
         $hint = '';
-        switch($status) {
-            case 402: {
+        switch ($status) {
+            case 402:
                 $hint = " Check your order status;";
                 break;
-            }
-            case 502: {
+            case 502:
                 $hint = " Please try later;";
                 break;
-            }
         }
         return $hint;
     }
 
-    public function curlWriteHandler($ch,$chunk)
+    public function curlWriteHandler($ch, $chunk)
     {
         $size = 0;
-        if($this->stage_data_stack['stream']&&is_resource($this->stage_data_stack['stream'])){
-            $size = fwrite($this->stage_data_stack['stream'],$chunk);
+        if ($this->stage_data_stack['stream'] && is_resource($this->stage_data_stack['stream'])) {
+            $size = fwrite($this->stage_data_stack['stream'], $chunk);
             $this->stage_data_stack['stage_current_value'] += $size;
-            $this->writeLog(__METHOD__,self::LOG_DEBUG,curl_getinfo($ch));
-        }else{
+            $this->writeLog(__METHOD__, self::LOG_DEBUG, curl_getinfo($ch));
+        } else {
             throw new Exception('Invalid write stream');
         }
         $state_data = array(
-			'stage_value'=>$this->stage_data_stack['stage_value'],
-			'stage_current_value'=>$this->stage_data_stack['stage_current_value'],
+            'stage_value'         => $this->stage_data_stack['stage_value'],
+            'stage_current_value' => $this->stage_data_stack['stage_current_value'],
         );
         $this->setState($state_data);
         return $size;
     }
 
-    public function curlHeaderHandler($ch,$header)
+    public function curlHeaderHandler($ch, $header)
     {
-        $this->writeLog(__METHOD__,self::LOG_DEBUG,$header);
+        $this->writeLog(__METHOD__, self::LOG_DEBUG, $header);
         $header_matches = null;
-        if(preg_match('/content-length:\s*(\d+)/i',$header,$header_matches)){
-            $this->stage_data_stack['stage_value']=intval($header_matches[1]);
+        if (preg_match('/content-length:\s*(\d+)/i', $header, $header_matches)) {
+            $this->stage_data_stack['stage_value'] = intval($header_matches[1]);
         }
         return strlen($header);
     }
@@ -741,30 +736,30 @@ class waInstaller
      * @param $target_path
      * @return boolean
      */
-    private function stageExtract($compressed_file,$target_path,$base_path = '')
+    private function stageExtract($compressed_file, $target_path, $base_path = '')
     {
-        $this->writeLog(__METHOD__,self::LOG_TRACE,array('compressed_file'=>$compressed_file,'target_path'=>$target_path,'base_path'=>$base_path));
+        $this->writeLog(__METHOD__, self::LOG_TRACE, array('compressed_file' => $compressed_file, 'target_path' => $target_path, 'base_path' => $base_path));
 
         //TODO test open archive
         //TODO check write permissions/file contents
 
         //extract files
-        if(!class_exists('DurableTar')){
+        if (!class_exists('DurableTar')) {
             throw new Exception('class DurableTar not found');
         }
         $resumeOffset = null;
         $tarSize = null;
-        $tar = new DurableTar( $compressed_file, true,$resumeOffset,$tarSize );
-        $tar->setErrorHandling( PEAR_ERROR_PRINT );
-        $tar->setStateHandler(array(&$this,'setState'));
-        $tar->setPerformanceHandler(array(&$this,'adjustStageChunk'));
+        $tar = new DurableTar($compressed_file, true, $resumeOffset, $tarSize);
+        $tar->setErrorHandling(PEAR_ERROR_PRINT);
+        $tar->setStateHandler(array(&$this, 'setState'));
+        $tar->setPerformanceHandler(array(&$this, 'adjustStageChunk'));
         ob_start();
-        $result = $tar->extractModify(self::$root_path.$target_path, $base_path);
+        $result = $tar->extractModify(self::$root_path . $target_path, $base_path);
         $tar_out = ob_get_clean();
-        if ( !$result ){
+        if (!$result) {
             throw new Exception("Error while extracting {$compressed_file}: {$tar_out}");
-        }elseif($tar_out){
-            $this->writeLog("Message while extracting {$compressed_file}: {$tar_out}",self::LOG_WARNING);
+        } elseif ($tar_out) {
+            $this->writeLog("Message while extracting {$compressed_file}: {$tar_out}", self::LOG_WARNING);
         }
         return $result;
     }
@@ -773,13 +768,13 @@ class waInstaller
     {
         $source_size = 0;
         $source_path = self::formatPath($source_path);
-        $this->getSpaceUsage($source_path,$source_size);
-        if(file_exists(self::$root_path.$source_path)&&!is_writable(self::$root_path.$source_path)){
-            throw new Exception(_w("Invalid file permissions").' '.$source_path);
+        $this->getSpaceUsage($source_path, $source_size);
+        if (file_exists(self::$root_path . $source_path) && !is_writable(self::$root_path . $source_path)) {
+            throw new Exception(_w("Invalid file permissions") . ' ' . $source_path);
         }
         $disk_free_space = disk_free_space(self::$root_path);
-        $this->writeLog(__FUNCTION__,self::LOG_TRACE,array('disk_free_space'=>$disk_free_space,'total_copy_size'=>$source_size));
-        if($disk_free_space && ($source_size>$disk_free_space)){
+        $this->writeLog(__FUNCTION__, self::LOG_TRACE, array('disk_free_space' => $disk_free_space, 'total_copy_size' => $source_size));
+        if ($disk_free_space && ($source_size > $disk_free_space)) {
             throw new Exception("Not enough disk space. Required at least {$source_size} but get {$disk_free_space}");
         }
         return $source_size;
@@ -791,79 +786,79 @@ class waInstaller
      * @param $target_path
      * @return boolean
      */
-    private function stageCopy($source_path,$target_path,$source_size = 0,$mode = 0777,$level = 0)
+    private function stageCopy($source_path, $target_path, $source_size = 0, $mode = 0777, $level = 0)
     {
         $target_path = self::formatPath($target_path);
         $source_path = self::formatPath($source_path);
         static $copied_size = 0;
         static $last_copied_size = 0;
         static $chunk_size = 1048576;
-        $this->writeLog(__METHOD__,self::LOG_TRACE,array('source_path'=>$source_path,'target_path'=>$target_path,'source_size'=>$source_size));
-        if(!$level){
+        $this->writeLog(__METHOD__, self::LOG_TRACE, array('source_path' => $source_path, 'target_path' => $target_path, 'source_size' => $source_size));
+        if (!$level) {
             $copied_size = 0;
             $last_copied_size = 0;
-            $this->setState(array('stage_value'=>$source_size,'stage_current_value'=>0));
+            $this->setState(array('stage_value' => $source_size, 'stage_current_value' => 0));
         }
-        if(!$source_size){
+        if (!$source_size) {
             return true;
         }
-        if(file_exists(self::$root_path.$source_path)&&is_dir(self::$root_path.$source_path)){
-            if(!file_exists(self::$root_path.$target_path)){
-                $this->mkdir($target_path,$mode);
-            }elseif(!is_dir(self::$root_path.$target_path)){
+        if (file_exists(self::$root_path . $source_path) && is_dir(self::$root_path . $source_path)) {
+            if (!file_exists(self::$root_path . $target_path)) {
+                $this->mkdir($target_path, $mode);
+            } elseif (!is_dir(self::$root_path . $target_path)) {
                 throw new Exception("Error on make dir {$target_path} - it's a file");
 
-            }elseif(!is_writable(self::$root_path.$target_path)){
+            } elseif (!is_writable(self::$root_path . $target_path)) {
                 throw new Exception("Error on access {$target_path} write forbidden");
             }
-            try{
-                $dir=opendir(self::$root_path.$source_path);
-                while (false!==($path=readdir($dir))){
-                    if(($path != '.' )&&($path != '..')){
-                        $destiny=self::$root_path.$target_path.'/'.$path;
-                        $source=self::$root_path.$source_path.'/'.$path;
-                        if(file_exists($source)){
-                            if(is_dir($source)){
-                                if(!$this->skipPath($path)){
-                                    $this->stageCopy($source_path.'/'.$path,$target_path.'/'.$path,$source_size,$mode,$level+1);
+            try {
+                $dir = opendir(self::$root_path . $source_path);
+                while (false !== ($path = readdir($dir))) {
+                    if (($path != '.') && ($path != '..')) {
+                        $destiny = self::$root_path . $target_path . '/' . $path;
+                        $source = self::$root_path . $source_path . '/' . $path;
+                        if (file_exists($source)) {
+                            if (is_dir($source)) {
+                                if (!$this->skipPath($path)) {
+                                    $this->stageCopy($source_path . '/' . $path, $target_path . '/' . $path, $source_size, $mode, $level + 1);
                                 }
-                            }elseif(is_link($source)){
+                            } elseif (is_link($source)) {
                                 //TODO copy symlink for new path
-                            }else{
-                                if(!file_exists($destiny)){//skip file move on resume
-                                    if(@copy($source,$destiny)){
-                                        if(false){
+                                } else {
+                                if (!file_exists($destiny)) { //skip file move on resume
+                                    if (@copy($source, $destiny)) {
+                                        if (false) {
                                             $file_mode = fileperms($source);
-                                            if($file_mode !== false){
-                                                chmod($destiny,$file_mode);
+                                            if ($file_mode !== false) {
+                                                chmod($destiny, $file_mode);
                                             }
                                         }
-                                    }else{
-                                        if(file_exists($destiny) && (filesize($source)===0)){
+                                    } else {
+                                        if (file_exists($destiny) && (filesize($source) === 0)) {
                                             //It's ok - it's windows
-                                        }else{
+                                            } else {
                                             throw new Exception("error on copy from {$source_path}/{$path} to {$target_path}/{$path}");
                                         }
                                     }
                                 }
 
                                 $copied_size += filesize($destiny);
-                                if(($copied_size-$last_copied_size)>$chunk_size){
+                                if (($copied_size - $last_copied_size) > $chunk_size) {
                                     $last_copied_size = $copied_size;
                                     //adjust copy chunk size
-                                    $performance = $this->setState(array('stage_current_value'=>$copied_size,'stage_value'=>$source_size,'debug'=>$chunk_size));
-                                    $chunk_size = $this->adjustStageChunk($chunk_size,$performance,__FUNCTION__,16384,16384,4194304);
+                                    $performance = $this->setState(array('stage_current_value' => $copied_size, 'stage_value' => $source_size, 'debug' => $chunk_size));
+                                    $chunk_size = $this->adjustStageChunk($chunk_size, $performance, __FUNCTION__, 16384, 16384, 4194304);
                                 }
                             }
-                        }else{
+                        } else {
                             throw new Exception("Not found {$source_path}/{$path}");
                         }
                     }
                 }
                 closedir($dir);
                 return true;
-            }catch(Exception $ex){
-                if($dir&&is_resource($dir)){
+            } catch (Exception $ex) {
+                if ($dir && is_resource($dir)) {
                     closedir($dir);
                 }
                 throw $ex;
@@ -871,51 +866,51 @@ class waInstaller
         }
     }
 
-    private function getSpaceUsage($path,&$size)
+    private function getSpaceUsage($path, &$size)
     {
         static $size_heartbeat = 0;
-        try{
-            $full_path = self::$root_path.$path;
-            if(file_exists($full_path)){
-                if(is_dir($full_path)){
-                    $dir=opendir($full_path);
-                    while (false!==($path_name=readdir($dir))){
-                        if(($path_name != '.' )&&($path_name != '..')){
-                            $file_path = $path.'/'.$path_name;
-                            $full_path=self::$root_path.$file_path;
-                            if(file_exists($full_path)){
-                                if(is_dir($full_path)){
-                                    if($path_name == '.svn'){
+        try {
+            $full_path = self::$root_path . $path;
+            if (file_exists($full_path)) {
+                if (is_dir($full_path)) {
+                    $dir = opendir($full_path);
+                    while (false !== ($path_name = readdir($dir))) {
+                        if (($path_name != '.') && ($path_name != '..')) {
+                            $file_path = $path . '/' . $path_name;
+                            $full_path = self::$root_path . $file_path;
+                            if (file_exists($full_path)) {
+                                if (is_dir($full_path)) {
+                                    if ($path_name == '.svn') {
                                         //throw new Exception("Update at developer instance are disabled\n (<b>{$file_path}</b> founded)");
-                                    }
-                                    if($this->skipPath($path_name)){
+                                        }
+                                    if ($this->skipPath($path_name)) {
 
-                                    }else{
-                                        $this->getSpaceUsage($path.'/'.$path_name,$size);
+                                    } else {
+                                        $this->getSpaceUsage($path . '/' . $path_name, $size);
                                     }
-                                }elseif(is_link($full_path)){
+                                } elseif (is_link($full_path)) {
                                     //skip symlinks
-                                }else{
+                                    } else {
                                     $size += filesize($full_path);
                                 }
-                            }else{
+                            } else {
                                 throw new Exception("Not found {$path}/{$path_name}");
                             }
-                            if(($size-$size_heartbeat)>8388608){
-                                $this->setState(array('debug'=>$size));
+                            if (($size - $size_heartbeat) > 8388608) {
+                                $this->setState(array('debug' => $size));
                                 $size_heartbeat = $size;
                             }
                         }
                     }
                     closedir($dir);
-                }elseif(is_link($full_path)){
+                } elseif (is_link($full_path)) {
                     //skip symlinks
-                }else{
+                    } else {
                     $size += filesize($full_path);
                 }
             }
-        }catch(Exception $ex){
-            if($dir&&is_resource($dir)){
+        } catch (Exception $ex) {
+            if ($dir && is_resource($dir)) {
                 closedir($dir);
             }
             throw $ex;
@@ -929,104 +924,102 @@ class waInstaller
      * @param $store_prev boolean
      * @return string backup directory paty
      */
-    private function stageReplace($source_path,$target_path,$store_prev = false)
+    private function stageReplace($source_path, $target_path, $store_prev = false)
     {
         $target_path = self::formatPath($target_path);
         $source_path = self::formatPath($source_path);
-        $this->writeLog(__METHOD__,self::LOG_TRACE,array('source_path'=>$source_path,'target_path'=>$target_path,'store_prev'=>$store_prev));
+        $this->writeLog(__METHOD__, self::LOG_TRACE, array('source_path' => $source_path, 'target_path' => $target_path, 'store_prev' => $store_prev));
         $backup_path = false;
         $prev_backup_path = false;
-        try{
-            if(file_exists(self::$root_path.$target_path)){
-                $backup_path = self::$update_path.'backup/';
+        try {
+            if (file_exists(self::$root_path . $target_path)) {
+                $backup_path = self::$update_path . 'backup/';
                 $this->mkdir($backup_path);
-                if($store_prev){
-                    $backup_path .= $target_path.date('Y-m-d H-i-s');
-                }else{
+                if ($store_prev) {
+                    $backup_path .= $target_path . date('Y-m-d H-i-s');
+                } else {
                     $backup_path .= $target_path;
-                    if(file_exists(self::$root_path.$backup_path)){
-                        do{
-                            $prev_backup_path = $backup_path .'.'.md5(time());
-                        }while(!file_exists(self::$root_path.$backup_path));
+                    if (file_exists(self::$root_path . $backup_path)) {
+                        do {
+                            $prev_backup_path = $backup_path . '.' . md5(time());
+                        } while (!file_exists(self::$root_path . $backup_path));
 
-                        if(!$this->rename($backup_path,$prev_backup_path)){
+                        if (!$this->rename($backup_path, $prev_backup_path)) {
                             $prev_backup_path = false;
                             throw new Exception("Error while rename old backup path {$backup_path}");
                         }
                     }
                 }
                 $backup_path = self::formatPath($backup_path);
-            }else{
-                $middle_path = preg_replace('@(^|/)[^/]+[/\\\\]+$@','/',$target_path.'/');
-                if($middle_path){
+            } else {
+                $middle_path = preg_replace('@(^|/)[^/]+[/\\\\]+$@', '/', $target_path . '/');
+                if ($middle_path) {
                     $this->mkdir($middle_path);
                 }
             }
-            if($backup_path){
-                $this->mkdir(preg_replace('@/[^/]+[/\\\\]+$@','/',$backup_path.'/'));
-                if($this->rename($target_path,$backup_path)){
-                    $this->writeLog(__METHOD__.' backup current version code',self::LOG_TRACE,array('backup_path'=>$backup_path));
-                    if((strpos($target_path,'.')!==false)&&file_exists(self::$root_path.'.'.$target_path.'.md5')){
+            if ($backup_path) {
+                $this->mkdir(preg_replace('@/[^/]+[/\\\\]+$@', '/', $backup_path . '/'));
+                if ($this->rename($target_path, $backup_path)) {
+                    $this->writeLog(__METHOD__ . ' backup current version code', self::LOG_TRACE, array('backup_path' => $backup_path));
+                    if ((strpos($target_path, '.') !== false) && file_exists(self::$root_path . '.' . $target_path . '.md5')) {
 
                     }
-                }else{
+                } else {
                     throw new Exception("Error on make backup for {$target_path} at {$backup_path}");
                 }
             }
-            if(strpos($target_path,'.')===false){
-                if($this->rename($source_path,$target_path)){
-                    $this->writeLog(__METHOD__.' replace current version code',self::LOG_TRACE,array('target_path'=>$target_path));
-                }else{
+            if (strpos($target_path, '.') === false) {
+                if ($this->rename($source_path, $target_path)) {
+                    $this->writeLog(__METHOD__ . ' replace current version code', self::LOG_TRACE, array('target_path' => $target_path));
+                } else {
                     //roll back rename
-                    if($backup_path){
-                        $this->rename($backup_path,$target_path);
+                    if ($backup_path) {
+                        $this->rename($backup_path, $target_path);
                     }
                     throw new Exception("Error on update {$target_path} by {$source_path}");
                 }
-            }else{
+            } else {
 
             }
-            if($prev_backup_path){
-                try{
+            if ($prev_backup_path) {
+                try {
                     $this->cleanupPath($prev_backup_path);
-                }catch(Exception $ex){
-                    $this->writeLog($ex->getMessage(),self::LOG_ERROR);
+                } catch (Exception $ex) {
+                    $this->writeLog($ex->getMessage(), self::LOG_ERROR);
                 }
             }
-        }catch(Exception $ex){
-            try{
-                if($prev_backup_path){
+        } catch (Exception $ex) {
+            try {
+                if ($prev_backup_path) {
                     $this->cleanupPath($backup_path);
-                    $this->rename($prev_backup_path,$backup_path);
+                    $this->rename($prev_backup_path, $backup_path);
                 }
-            }catch(Exception $ex){
-                $this->writeLog($ex->getMessage(),self::LOG_ERROR);
+            } catch (Exception $ex) {
+                $this->writeLog($ex->getMessage(), self::LOG_ERROR);
             }
             throw $ex;
         }
         return $backup_path;
     }
 
-    private function rename($oldname,$newname)
+    private function rename($oldname, $newname)
     {
         $result = false;
-        if(@rename(self::$root_path.$oldname,self::$root_path.$newname)
-        ||sleep(3)
-        ||@rename(self::$root_path.$oldname,self::$root_path.$newname)){
+        if (@rename(self::$root_path . $oldname, self::$root_path . $newname) || sleep(3) || @rename(self::$root_path . $oldname, self::$root_path . $newname)) {
             $result = true;
-            $this->writeLog(__METHOD__.' replace current version code',self::LOG_TRACE,array('oldname'=>$oldname,'newname'=>$newname));
+            $this->writeLog(__METHOD__ . ' replace current version code', self::LOG_TRACE, array('oldname' => $oldname, 'newname' => $newname));
         }
         return $result;
     }
 
     private function stageCleanup($paths)
     {
-        foreach((array)$paths as $path=>$skip_directory){
-            if(!is_bool($skip_directory)){
+        foreach ((array) $paths as $path => $skip_directory) {
+            if (!is_bool($skip_directory)) {
                 $path = $skip_directory;
                 $skip_directory = false;
             }
-            $this->cleanupPath($path,$skip_directory);
+            $this->cleanupPath($path, $skip_directory);
         }
         return true;
     }
@@ -1038,49 +1031,49 @@ class waInstaller
 
     private function stageVerify($path, $purge_obsolete_files = false, $hash = array())
     {
-        try{
+        try {
             $path = self::formatPath($path);
-            $hash_path = self::$root_path.$path.'/'.self::HASH_PATH;
+            $hash_path = self::$root_path . $path . '/' . self::HASH_PATH;
             if (file_exists($hash_path)) {
-                if($hashes = explode("\n",file_get_contents($hash_path))) {
+                if ($hashes = explode("\n", file_get_contents($hash_path))) {
                     foreach ($hashes as $line) {
-                        if ($line && preg_match('/^([0-9a-f]{32})\s+\*(.*)$/',$line, $matches)) {
-                            $hash[$path.'/'.$matches[2]] = $matches[1];
+                        if ($line && preg_match('/^([0-9a-f]{32})\s+\*(.*)$/', $line, $matches)) {
+                            $hash[$path . '/' . $matches[2]] = $matches[1];
                         }
                     }
-                    $this->writeLog(var_export($hash,true),self::LOG_DEBUG);
+                    $this->writeLog(var_export($hash, true), self::LOG_DEBUG);
                 }
             }
-            $dir=opendir(self::$root_path.$path);
-            while (false!==($name=readdir($dir))){
-                if(($name != '.' ) && ($name != '..')){
-                    $relative_path = $path.'/'.$name;
-                    $file=self::$root_path.$relative_path;
-                    if(file_exists($file)){
+            $dir = opendir(self::$root_path . $path);
+            while (false !== ($name = readdir($dir))) {
+                if (($name != '.') && ($name != '..')) {
+                    $relative_path = $path . '/' . $name;
+                    $file = self::$root_path . $relative_path;
+                    if (file_exists($file)) {
 
-                        if(is_dir($file)){
+                        if (is_dir($file)) {
                             $this->stageVerify($relative_path, $purge_obsolete_files, $hash);
-                        } elseif($name != self::HASH_PATH){
+                        } elseif ($name != self::HASH_PATH) {
                             if (isset($hash[$relative_path])) {
-                                if(md5_file($file) != $hash[$relative_path]) {
-                                    $this->writeLog("File {$relative_path} modified",self::LOG_WARNING);
+                                if (md5_file($file) != $hash[$relative_path]) {
+                                    $this->writeLog("File {$relative_path} modified", self::LOG_WARNING);
                                 }
                             } else {
-                                $this->writeLog("File {$relative_path} is obsolete",self::LOG_WARNING);
+                                $this->writeLog("File {$relative_path} is obsolete", self::LOG_WARNING);
                                 if ($purge_obsolete_files) {
-                                    $this->writeLog("File {$relative_path} deleted ".(@unlink($file)?'success':'fail'),self::LOG_WARNING);
+                                    $this->writeLog("File {$relative_path} deleted " . (@unlink($file) ? 'success' : 'fail'), self::LOG_WARNING);
                                 }
                             }
                         }
-                    }else{
+                    } else {
                         throw new Exception("Not found {$relative_path}");
                     }
                 }
             }
             closedir($dir);
             return true;
-        }catch(Exception $ex){
-            if($dir&&is_resource($dir)){
+        } catch (Exception $ex) {
+            if ($dir && is_resource($dir)) {
                 closedir($dir);
             }
             throw $ex;
@@ -1089,13 +1082,13 @@ class waInstaller
 
     public static function obHandler($output)
     {
-        if(!self::$ob_skip){
+        if (!self::$ob_skip) {
             $instance = new self(self::LOG_WARNING);
             $state = $instance->getState();
-            $instance->current_stage = $state['stage_name'].'_'.self::STATE_ERROR;
+            $instance->current_stage = $state['stage_name'] . '_' . self::STATE_ERROR;
             $instance->current_chunk_id = $state['chunk_id'];
-            $instance->writeLog(__METHOD__.' error: '.strip_tags($output),self::LOG_ERROR);
-            $state = array_merge($state,array('error'=>strip_tags($output),'stage_status'=>self::STATE_ERROR));
+            $instance->writeLog(__METHOD__ . ' error: ' . strip_tags($output), self::LOG_ERROR);
+            $state = array_merge($state, array('error' => strip_tags($output), 'stage_status' => self::STATE_ERROR));
             $instance->setState($state);
         }
         return $output;
@@ -1107,39 +1100,39 @@ class waInstaller
      * @param $skip_directory
      * @return void
      */
-    private function cleanupPath($paths,$skip_directory = false)
+    private function cleanupPath($paths, $skip_directory = false)
     {
         static $timestamp = 0;
-        if(!$timestamp){
+        if (!$timestamp) {
             $timestamp = microtime(true);
         }
-        foreach((array)$paths as $path){
-            try{
+        foreach ((array) $paths as $path) {
+            try {
 
-                if(file_exists(self::$root_path.$path)){
-                    $dir=opendir(self::$root_path.$path);
-                    while (false!==($current_path=readdir($dir))){
-                        if(($current_path != '.' )&&($current_path != '..')){
-                            if(is_dir(self::$root_path.$path.'/'.$current_path)){
-                                $this->cleanupPath($path.'/'.$current_path,$skip_directory);
-                            }else{
-                                if(!@unlink(self::$root_path.$path.'/'.$current_path)){
+                if (file_exists(self::$root_path . $path)) {
+                    $dir = opendir(self::$root_path . $path);
+                    while (false !== ($current_path = readdir($dir))) {
+                        if (($current_path != '.') && ($current_path != '..')) {
+                            if (is_dir(self::$root_path . $path . '/' . $current_path)) {
+                                $this->cleanupPath($path . '/' . $current_path, $skip_directory);
+                            } else {
+                                if (!@unlink(self::$root_path . $path . '/' . $current_path)) {
                                     throw new Exception("Error on unlink file {$path}/{$current_path}");
                                 }
                             }
                         }
-                        if(($current_timestamp = microtime(true))&&(($current_timestamp-$timestamp)>3)){
+                        if (($current_timestamp = microtime(true)) && (($current_timestamp - $timestamp) > 3)) {
                             $timestamp = $current_timestamp;
                             $this->setState();
                         }
                     }
                     closedir($dir);
-                    if(!@rmdir(self::$root_path.$path)&&!$skip_directory){
+                    if (!@rmdir(self::$root_path . $path) && !$skip_directory) {
                         throw new Exception("Error on unlink directory {$path}");
                     }
                 }
-            }catch(Exception $ex){
-                if($dir&&is_resource($dir)){
+            } catch (Exception $ex) {
+                if ($dir && is_resource($dir)) {
                     closedir($dir);
                 }
                 throw $ex;
@@ -1155,31 +1148,31 @@ class waInstaller
     public function getState()
     {
         $state = array(
-				'start_time'=>false,
-				'start_time_float'=>false,
+            'start_time'       => false,
+            'start_time_float' => false,
 
-				'elapsed_time'=>0.0,
+            'elapsed_time'     => 0.0,
 
-				'stage'=>0,
-				'stage_name'=>self::STAGE_NONE,
-				'stage_status'=>'wait',
-				'heartbeat'=>false,
+            'stage'            => 0,
+            'stage_name'       => self::STAGE_NONE,
+            'stage_status'     => 'wait',
+            'heartbeat'        => false,
         );
-        $path = self::$root_path.self::PATH_STATE;
-        if(file_exists($path)){
-            if(($data = file_get_contents($path))&&($data=base64_decode($data,true))){
-                $state = array_merge($state,(array)unserialize($data));
-            }elseif(sleep(1)||($data = file_get_contents($path))&&($data=base64_decode($data,true))){
-                $state = array_merge($state,(array)unserialize($data));
-            }elseif(sleep(1)||($data = file_get_contents($path))&&($data=base64_decode($data,true))){
-                $state = array_merge($state,(array)unserialize($data));
-            }else{
-                $state['stage_name']=self::STAGE_NONE;
+        $path = self::$root_path . self::PATH_STATE;
+        if (file_exists($path)) {
+            if (($data = file_get_contents($path)) && ($data = base64_decode($data, true))) {
+                $state = array_merge($state, (array) unserialize($data));
+            } elseif (sleep(1) || ($data = file_get_contents($path)) && ($data = base64_decode($data, true))) {
+                $state = array_merge($state, (array) unserialize($data));
+            } elseif (sleep(1) || ($data = file_get_contents($path)) && ($data = base64_decode($data, true))) {
+                $state = array_merge($state, (array) unserialize($data));
+            } else {
+                $state['stage_name'] = self::STAGE_NONE;
                 $state['stage_status'] = self::STATE_ERROR;
                 $state['error'] = 'Error while read state file';
             }
-        }else{
-            $state['stage_name']=self::STAGE_NONE;
+        } else {
+            $state['stage_name'] = self::STAGE_NONE;
             $state['stage_status'] = 'wait';
         }
 
@@ -1189,41 +1182,31 @@ class waInstaller
     private static function prepareState($state)
     {
         //calculate elapsed and estimated_time
-        if(isset($state['timestamp_float']) && isset($state['stage_start_time'])){
+        if (isset($state['timestamp_float']) && isset($state['stage_start_time'])) {
             $state['stage_elapsed_time'] = $state['timestamp_float'] - $state['stage_start_time'];
             $state['elapsed_time'] = $state['timestamp_float'] - $state['start_time_float'];
         }
         //calculate progress
-        if(isset($state['stage_value'])&&isset($state['stage_current_value'])&&$state['stage_value']>0){
-            $state['stage_progress'] = sprintf('%0.1f',min(100,100*$state['stage_current_value']/$state['stage_value']));
-        }else{
+        if (isset($state['stage_value']) && isset($state['stage_current_value']) && $state['stage_value'] > 0) {
+            $state['stage_progress'] = sprintf('%0.1f', min(100, 100 * $state['stage_current_value'] / $state['stage_value']));
+        } else {
             $state['stage_progress'] = null;
         }
 
-        if(isset($state['stage_value'])
-        &&
-        isset($state['stage_current_value'])
-        &&
-        ($state['stage_current_value']>0)
-        &&
-        ($state['stage_value']>0)
-        ){
-            $state['stage_estimated_time'] = $state['stage_elapsed_time']*$state['stage_value']/$state['stage_current_value'];
+        if (isset($state['stage_value']) && isset($state['stage_current_value']) && ($state['stage_current_value'] > 0) && ($state['stage_value'] > 0)) {
+            $state['stage_estimated_time'] = $state['stage_elapsed_time'] * $state['stage_value'] / $state['stage_current_value'];
             //$state['stage_estimated_time'] -= $state['stage_elapsed_time'];
-        }else{
+            } else {
             $state['stage_estimated_time'] = false;
         }
 
-        if(
-        isset($state['stage_elapsed_time'])&&($state['stage_elapsed_time']>0)
-        &&isset($state['stage_current_value'])&&($state['stage_current_value']>0)
-        ){
-            $state['stage_performance_avg'] = $state['stage_current_value']/$state['stage_elapsed_time'];
-        }else{
+        if (isset($state['stage_elapsed_time']) && ($state['stage_elapsed_time'] > 0) && isset($state['stage_current_value']) && ($state['stage_current_value'] > 0)) {
+            $state['stage_performance_avg'] = $state['stage_current_value'] / $state['stage_elapsed_time'];
+        } else {
             $state['stage_performance_avg'] = 0;
         }
 
-        if(!isset($state['stage_performance'])){
+        if (!isset($state['stage_performance'])) {
             $state['stage_performance'] = 0;
         }
         $state['stage_performance_formatted'] = '';
@@ -1235,11 +1218,11 @@ class waInstaller
         $state['stage_performance_formatted'] .= ' (current/avg)';
 
         $current_time = microtime(true);
-        if(isset($state['stage_start_time'])&&$state['stage_start_time']){
+        if (isset($state['stage_start_time']) && $state['stage_start_time']) {
             $state['stage_elapsed_time'] = $current_time - $state['stage_start_time'];
         }
-        if(isset($state['timestamp_float'])){
-            $state['heartbeat'] = $current_time-$state['timestamp_float'];
+        if (isset($state['timestamp_float'])) {
+            $state['heartbeat'] = $current_time - $state['timestamp_float'];
         }
         return $state;
     }
@@ -1247,13 +1230,13 @@ class waInstaller
     private static function formatPerformance($performance)
     {
         $result = '';
-        if($performance>1024*512){
-            $result .= sprintf('%0.2fMb/s',$performance/(1024*1024));
-        }elseif($performance>512){
-            $result .= sprintf('%0.2fKb/s',$performance/1024);
-        }elseif($performance>0.5){
-            $result .= sprintf('%0.2fb/s',$performance);
-        }else{
+        if ($performance > 1024 * 512) {
+            $result .= sprintf('%0.2fMb/s', $performance / (1024 * 1024));
+        } elseif ($performance > 512) {
+            $result .= sprintf('%0.2fKb/s', $performance / 1024);
+        } elseif ($performance > 0.5) {
+            $result .= sprintf('%0.2fb/s', $performance);
+        } else {
             $result .= '-';
         }
         return $result;
@@ -1269,120 +1252,116 @@ class waInstaller
     {
         static $state = array();
         $escalate_log_level = false;
-        if(!$state){
+        if (!$state) {
             $state = array(
-				'start_time'=>time(),
-				'start_time_float'=>microtime(true),
+                'start_time'       => time(),
+                'start_time_float' => microtime(true),
 
-				'elapsed_time'=>0.0,
+                'elapsed_time'     => 0.0,
 
-				'stage'=>0,			//int
-				'stage_name'=>'unkown_none',
-				'state_heartbeat'=>false,		//
-				'thread_id'=>$this->thread_id,
-				'chunk_id'=>null,
+                'stage'            => 0, //int
+                'stage_name'       => 'unkown_none',
+                'state_heartbeat'  => false, //
+                'thread_id'        => $this->thread_id,
+                'chunk_id'         => null,
 
             );
         }
-        if(strpos($this->current_stage, '_')=== false) {
+        if (strpos($this->current_stage, '_') === false) {
             $stage_name = 'unknown';
             $stage_status = self::STAGE_NONE;
         } else {
-            list($stage_name,$stage_status) = explode('_',$this->current_stage,2);
+            list($stage_name, $stage_status) = explode('_', $this->current_stage, 2);
         }
 
         $default = array(
-				'chunk_id'			=> $this->current_chunk_id,
-				'stage_status'		=> $stage_status,
-				'timestamp'			=> time(),
-				'timestamp_float'	=> microtime(true),
+            'chunk_id'        => $this->current_chunk_id,
+            'stage_status'    => $stage_status,
+            'timestamp'       => time(),
+            'timestamp_float' => microtime(true),
         );
-        if($stage_status == self::STATE_COMPLETE){
+        if ($stage_status == self::STATE_COMPLETE) {
             $escalate_log_level = true;
         }
-        $state_params = array_merge($state_params,$default);
-        if($this->current_stage&&(($state['chunk_id'] !=$state_params['chunk_id']) ||($state['stage_name'] != $stage_name))){
-            if($state['stage_name'] != $stage_name){
+        $state_params = array_merge($state_params, $default);
+        if ($this->current_stage && (($state['chunk_id'] != $state_params['chunk_id']) || ($state['stage_name'] != $stage_name))) {
+            if ($state['stage_name'] != $stage_name) {
                 $state['stage']++;
             }
-            $state['chunk_id'] =$state_params['chunk_id'];
+            $state['chunk_id'] = $state_params['chunk_id'];
             $escalate_log_level = true;
             $state['stage_name'] = $stage_name;
-            $state_params['stage_start_time'] =  $state_params['timestamp_float'];
-            $state_params['datetime'] =  date('r',intval($state_params['timestamp_float']));
-            if(!isset($state_params['stage_value'])){
+            $state_params['stage_start_time'] = $state_params['timestamp_float'];
+            $state_params['datetime'] = date('r', intval($state_params['timestamp_float']));
+            if (!isset($state_params['stage_value'])) {
                 $state_params['stage_value'] = 0;
             }
-            if(!isset($state_params['stage_current_value'])){
+            if (!isset($state_params['stage_current_value'])) {
                 $state_params['stage_current_value'] = 0;
             }
             $state['stage_current_value'] = 0;
-        }else{
-            if(
-            isset($state['stage_current_value'])&&isset($state_params['stage_current_value'])
-            &&
-            isset($state['timestamp_float'])&&isset($state_params['timestamp_float'])
-            ){
-                $state_params['stage_performance'] = ($state_params['stage_current_value']- $state['stage_current_value'])/($state_params['timestamp_float']- $state['timestamp_float']);
-            }else{
+        } else {
+            if (isset($state['stage_current_value']) && isset($state_params['stage_current_value']) && isset($state['timestamp_float']) && isset($state_params['timestamp_float'])) {
+                $state_params['stage_performance'] = ($state_params['stage_current_value'] - $state['stage_current_value']) / ($state_params['timestamp_float'] - $state['timestamp_float']);
+            } else {
                 $state_params['stage_performance'] = 0;
             }
         }
 
-        if(isset($state['timestamp_float'])){
-            $state['state_heartbeat'] = microtime(true)-$state['timestamp_float'];
+        if (isset($state['timestamp_float'])) {
+            $state['state_heartbeat'] = microtime(true) - $state['timestamp_float'];
         }
 
-        $state = array_merge($state,$state_params);
+        $state = array_merge($state, $state_params);
 
-        $this->writeLog(__METHOD__,$escalate_log_level?self::LOG_TRACE:self::LOG_DEBUG,$state);
+        $this->writeLog(__METHOD__, $escalate_log_level ? self::LOG_TRACE : self::LOG_DEBUG, $state);
         //TODO move next calculate code into getState()
-        if($state_handler = $this->fopen(self::PATH_STATE,'w')){
-            fwrite($state_handler,base64_encode(serialize($state)));
+        if ($state_handler = $this->fopen(self::PATH_STATE, 'w')) {
+            fwrite($state_handler, base64_encode(serialize($state)));
             $this->fclose($state_handler);
         }
         $this->setFullState($state);
-        return isset($state_params['stage_performance'])?intval(1024*ceil($state_params['stage_performance']/1024)):0;
+        return isset($state_params['stage_performance']) ? intval(1024 * ceil($state_params['stage_performance'] / 1024)) : 0;
     }
 
     private function setFullState($state)
     {
-        if(is_null($state)){
+        if (is_null($state)) {
             $fstate = array();
-        }else{
+        } else {
             $fstate = $this->getFullState();
             $slug = $state['chunk_id'];
             $stage = $state['stage'];
-            if(!isset($fstate[$slug])){
+            if (!isset($fstate[$slug])) {
                 $fstate[$slug] = array();
-            }elseif($stage == 1){
+            } elseif ($stage == 1) {
                 $fstate[$slug] = array();
             }
             $fstate[$slug][$state['stage']] = self::prepareState($state);
         }
-        if($state_handler = $this->fopen(self::PATH_FSTATE,'w')){
-            fwrite($state_handler,base64_encode(serialize($fstate)));
+        if ($state_handler = $this->fopen(self::PATH_FSTATE, 'w')) {
+            fwrite($state_handler, base64_encode(serialize($fstate)));
             $this->fclose($state_handler);
         }
     }
 
     public function getFullState($mode = 'apps')
     {
-        $path = self::$root_path.self::PATH_FSTATE;
+        $path = self::$root_path . self::PATH_FSTATE;
         $fstate = array();
-        if(file_exists($path)){
-            if(($data = file_get_contents($path))&&($data=base64_decode($data,true))){
-                $fstate = (array)unserialize($data);
+        if (file_exists($path)) {
+            if (($data = file_get_contents($path)) && ($data = base64_decode($data, true))) {
+                $fstate = (array) unserialize($data);
             }
         }
         //HACK for PHP < 5.2.14 - json_encode work incorrect for float
-        $res = array_walk_recursive($fstate,create_function('&$val, $key','$val = preg_match("/^-?\d+(\.|,)\d+$/",$val)?intval($val):$val;'));
-        switch($mode){
-            case 'stage':{
+        $res = array_walk_recursive($fstate, create_function('&$val, $key', '$val = preg_match("/^-?\d+(\.|,)\d+$/",$val)?intval($val):$val;'));
+        switch ($mode) {
+            case 'stage':
                 $state_ = array();
-                foreach($fstate as $app=>$stages){
-                    foreach($stages as $stage=>$info){
-                        if(!isset($state_[$stage])){
+                foreach ($fstate as $app => $stages) {
+                    foreach ($stages as $stage => $info) {
+                        if (!isset($state_[$stage])) {
                             $state_[$stage] = array();
                         }
                         $state_[$stage][$app] = $info;
@@ -1390,31 +1369,28 @@ class waInstaller
                 }
                 $fstate = $state_;
                 break;
-            }
-            case 'raw':{
+            case 'raw':
                 $state_ = array();
-                foreach($fstate as $app=>$stages){
-                    foreach($stages as $stage=>$info){
-                        if(!isset($state_[$stage])){
+                foreach ($fstate as $app => $stages) {
+                    foreach ($stages as $stage => $info) {
+                        if (!isset($state_[$stage])) {
                             $state_[$stage] = array();
                         }
                         $state_[$stage][$app] = $info;
                     }
                 }
                 $state__ = array();
-                foreach($state_ as $stage=>$stages){
-                    foreach($stages as $app=>$info){
+                foreach ($state_ as $stage => $stages) {
+                    foreach ($stages as $app => $info) {
                         $state__[] = $info;
                     }
                 }
                 $fstate = $state__;
                 break;
-            }
             case 'apps':
-            default:{
+            default:
                 //nothing to convert
                 break;
-            }
         }
         return $fstate;
     }
@@ -1422,67 +1398,77 @@ class waInstaller
     private function skipPath($path)
     {
         return false;
-        return (preg_match('/(\.update$|\.backup$|\.backup\.[\d]{4}-[\d]{2}-[\d]{2} [\d]{2}-[\d]{2}-[\d]{2}$)/',$path)?true:false);
+        return (preg_match('/(\.update$|\.backup$|\.backup\.[\d]{4}-[\d]{2}-[\d]{2} [\d]{2}-[\d]{2}-[\d]{2}$)/', $path) ? true : false);
     }
 
     private static function formatPath($path)
     {
-        $path = preg_replace('@([/\\\\]+)@','/',$path);
-        return preg_replace('@([/\\\\]+)$@','',$path);
+        $path = preg_replace('@([/\\\\]+)@', '/', $path);
+        return preg_replace('@([/\\\\]+)$@', '', $path);
     }
 
-    private function writeLog($message,$log_level = self::LOG_WARNING,$debug_data = null)
+    private function writeLog($message, $log_level = self::LOG_WARNING, $debug_data = null)
     {
         static $log_counter = 0;
-        if($log_level >= $this->log_level){
+        if ($log_level >= $this->log_level) {
             $this->mkdir(dirname(self::PATH_LOG));
             //TODO add date log modifier
-            if($this->log_handler||($this->log_handler = fopen(self::$root_path.self::PATH_LOG,($this->log_level>self::LOG_DEBUG?'w':'a')))){
+            if ($this->log_handler || ($this->log_handler = fopen(self::$root_path . self::PATH_LOG, ($this->log_level > self::LOG_DEBUG ? 'w' : 'a')))) {
                 $log_level_name = '';
-                switch($log_level){
-                    case self::LOG_DEBUG:	{$log_level_name = 'DEBUG';	break;}
-                    case self::LOG_TRACE:	{$log_level_name = 'TRACE';	break;}
-                    case self::LOG_WARNING:	{$log_level_name = 'WARNING';break;}
-                    case self::LOG_ERROR:	{$log_level_name = 'ERROR';	break;}
-                    default:				{$log_level_name = '-';break;}
+                switch ($log_level) {
+                    case self::LOG_DEBUG:
+                        $log_level_name = 'DEBUG';
+                        break;
+                    case self::LOG_TRACE:
+                        $log_level_name = 'TRACE';
+                        break;
+                    case self::LOG_WARNING:
+                        $log_level_name = 'WARNING';
+                        break;
+                    case self::LOG_ERROR:
+                        $log_level_name = 'ERROR';
+                        break;
+                    default:
+                        $log_level_name = '-';
+                        break;
                 }
             }
-            $memory_usage = function_exists('memory_get_usage')		?sprintf('%0.2fMb',memory_get_usage()/1048576):'unknown';
-            $memory_peak = function_exists('memory_get_peak_usage')	?sprintf('%0.2fMb',memory_get_peak_usage()/1048576):'unknown';
-            fwrite($this->log_handler,date('c').sprintf('%05d',++$log_counter)."\t{$this->thread_id}\t{$log_level_name}\t{$memory_usage}\t{$memory_peak}\t{$this->current_stage}\n{$message}".($debug_data?("\n{".str_repeat('-',60)."\n".var_export($debug_data,true)."\n}".str_repeat('-',60)):'')."\n");
+            $memory_usage = function_exists('memory_get_usage') ? sprintf('%0.2fMb', memory_get_usage() / 1048576) : 'unknown';
+            $memory_peak = function_exists('memory_get_peak_usage') ? sprintf('%0.2fMb', memory_get_peak_usage() / 1048576) : 'unknown';
+            fwrite($this->log_handler, date('c') . sprintf('%05d', ++$log_counter) . "\t{$this->thread_id}\t{$log_level_name}\t{$memory_usage}\t{$memory_peak}\t{$this->current_stage}\n{$message}" . ($debug_data ? ("\n{" . str_repeat('-', 60) . "\n" . var_export($debug_data, true) . "\n}" . str_repeat('-', 60)) : '') . "\n");
         }
     }
 
     private function protect($path)
     {
-        if(preg_match('`^(wa-data/protected|wa-log|wa-cache|wa-config)/`',$path,$matches)){
-            $htaccess_path = $matches[1].'/.htaccess';
-            if(!file_exists(self::$root_path.$htaccess_path)){
-                if($fp = fopen(self::$root_path.$htaccess_path,'w')){
-                    fwrite($fp,"Deny from all\n");
+        if (preg_match('`^(wa-data/protected|wa-log|wa-cache|wa-config)/`', $path, $matches)) {
+            $htaccess_path = $matches[1] . '/.htaccess';
+            if (!file_exists(self::$root_path . $htaccess_path)) {
+                if ($fp = fopen(self::$root_path . $htaccess_path, 'w')) {
+                    fwrite($fp, "Deny from all\n");
                     fclose($fp);
-                    $this->writeLog(__METHOD__,self::LOG_DEBUG,array('path'=>$path,'file'=>$htaccess_path));
-                }else{
-                    $this->writeLog(__METHOD__,self::LOG_ERROR,array('path'=>$path,'file'=>$htaccess_path));
+                    $this->writeLog(__METHOD__, self::LOG_DEBUG, array('path' => $path, 'file' => $htaccess_path));
+                } else {
+                    $this->writeLog(__METHOD__, self::LOG_ERROR, array('path' => $path, 'file' => $htaccess_path));
                     throw new Exception("Error while attempt protect {$path}");
                 }
             }
         }
     }
 
-    private function mkdir($target_path,$mode = 0777)
+    private function mkdir($target_path, $mode = 0777)
     {
-        if(!file_exists(self::$root_path.$target_path)){
-            if(!mkdir(self::$root_path.$target_path,$mode&0777,true)){
+        if (!file_exists(self::$root_path . $target_path)) {
+            if (!mkdir(self::$root_path . $target_path, $mode & 0777, true)) {
                 throw new Exception("Error on make dir {$target_path}");
-            }else{
-                $this->writeLog(__METHOD__,self::LOG_DEBUG,array('path'=>$target_path,'mode'=>$mode));
+            } else {
+                $this->writeLog(__METHOD__, self::LOG_DEBUG, array('path' => $target_path, 'mode' => $mode));
                 $this->protect($target_path);
             }
-        }elseif(!is_dir(self::$root_path.$target_path)){
+        } elseif (!is_dir(self::$root_path . $target_path)) {
             throw new Exception("Error on make dir {$target_path} - it's a file");
 
-        }elseif(!is_writable(self::$root_path.$target_path)){
+        } elseif (!is_writable(self::$root_path . $target_path)) {
             throw new Exception("Error on access {$target_path} write forbidden");
         }
     }
@@ -1497,30 +1483,30 @@ class waInstaller
      * @param $max_performance
      * @return int
      */
-    public function adjustStageChunk($current_chunk,$performance,$stage,$multiplier = null,$min_performance = 1,$max_performance = null)
+    public function adjustStageChunk($current_chunk, $performance, $stage, $multiplier = null, $min_performance = 1, $max_performance = null)
     {
         static $stack_length = 5;
         static $performance_data = array();
-        if(!isset($performance_data[$stage])){
+        if (!isset($performance_data[$stage])) {
             $performance_data[$stage] = array();
         }
         $performance_data[$stage][] = $performance;
-        if(count($performance_data[$stage])>$stack_length){
+        if (count($performance_data[$stage]) > $stack_length) {
             array_shift($performance_data[$stage]);
-            $calculated_chunk = array_sum($performance_data[$stage])/$stack_length;
-            $this->writeLog(__METHOD__,self::LOG_DEBUG,array($current_chunk,$calculated_chunk,$performance_data,$stack_length));
-            $calculated_chunk = min($calculated_chunk,$current_chunk*2);
-            $calculated_chunk = max($calculated_chunk,$current_chunk/2);
-        }else{
+            $calculated_chunk = array_sum($performance_data[$stage]) / $stack_length;
+            $this->writeLog(__METHOD__, self::LOG_DEBUG, array($current_chunk, $calculated_chunk, $performance_data, $stack_length));
+            $calculated_chunk = min($calculated_chunk, $current_chunk * 2);
+            $calculated_chunk = max($calculated_chunk, $current_chunk / 2);
+        } else {
             $calculated_chunk = $current_chunk;
         }
-        if($max_performance){
-            $calculated_chunk = min($calculated_chunk,$max_performance);
+        if ($max_performance) {
+            $calculated_chunk = min($calculated_chunk, $max_performance);
         }
-        $calculated_chunk = max(1,$calculated_chunk,$min_performance);
+        $calculated_chunk = max(1, $calculated_chunk, $min_performance);
 
-        if($multiplier){
-            $calculated_chunk = $multiplier*ceil($calculated_chunk/$multiplier);
+        if ($multiplier) {
+            $calculated_chunk = $multiplier * ceil($calculated_chunk / $multiplier);
         }
         return $calculated_chunk;
     }
@@ -1530,84 +1516,83 @@ class waInstaller
         return extension_loaded('curl') && function_exists('curl_init');
     }
 
-    private function getCurl($url,$curl_options = array())
+    private function getCurl($url, $curl_options = array())
     {
         $ch = null;
-        if(!extension_loaded('curl') || !function_exists('curl_init')){
+        if (!extension_loaded('curl') || !function_exists('curl_init')) {
             throw new Exception(_w('err_curlinit'));
         }
-        if (!($ch = curl_init()) ){
+        if (!($ch = curl_init())) {
             throw new Exception(_w('err_curlinit'));
         }
 
-        if ( curl_errno($ch) != 0 ){
-            throw new Exception(_w('err_curlinit').curl_errno($ch).' '.curl_error($ch));
+        if (curl_errno($ch) != 0) {
+            throw new Exception(_w('err_curlinit') . curl_errno($ch) . ' ' . curl_error($ch));
         }
-        if(!is_array($curl_options)){
+        if (!is_array($curl_options)) {
             $curl_options = array();
         }
         $curl_default_options = array(
-        CURLOPT_HEADER				=>0,
-        CURLOPT_RETURNTRANSFER		=>1,
-        CURLOPT_TIMEOUT				=>self::TIMEOUT_SOCKET*60,
-        CURLOPT_CONNECTTIMEOUT		=>self::TIMEOUT_SOCKET,
-        CURLE_OPERATION_TIMEOUTED	=>self::TIMEOUT_SOCKET*60,
-        CURLOPT_BINARYTRANSFER		=>true,
-        CURLOPT_WRITEFUNCTION		=>array(&$this,'curlWriteHandler'),
-        CURLOPT_HEADERFUNCTION		=>array(&$this,'curlHeaderHandler'),
+            CURLOPT_HEADER => 0,
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_TIMEOUT => self::TIMEOUT_SOCKET * 60,
+            CURLOPT_CONNECTTIMEOUT => self::TIMEOUT_SOCKET,
+            CURLE_OPERATION_TIMEOUTED => self::TIMEOUT_SOCKET * 60,
+            CURLOPT_BINARYTRANSFER => true,
+            CURLOPT_WRITEFUNCTION => array(&$this, 'curlWriteHandler'),
+            CURLOPT_HEADERFUNCTION => array(&$this, 'curlHeaderHandler'),
         );
 
-        if ((version_compare(PHP_VERSION, '5.4', '>=') || !ini_get('safe_mode')) && !ini_get('open_basedir')){
+        if ((version_compare(PHP_VERSION, '5.4', '>=') || !ini_get('safe_mode')) && !ini_get('open_basedir')) {
             $curl_default_options[CURLOPT_FOLLOWLOCATION] = true;
         }
-        foreach($curl_default_options as $option=>$value){
-            if(!isset($curl_options[$option])){
+        foreach ($curl_default_options as $option => $value) {
+            if (!isset($curl_options[$option])) {
                 $curl_options[$option] = $value;
             }
         }
         $curl_options[CURLOPT_URL] = $url;
-        $options_fields =array(
-				'host'=>'PROXY_HOST',
-				'port'=>'PROXY_PORT',
-				'user'=>'PROXY_USER',
-				'password'=>'PROXY_PASS',
-        ) ;
+        $options_fields = array(
+            'host'     => 'PROXY_HOST',
+            'port'     => 'PROXY_PORT',
+            'user'     => 'PROXY_USER',
+            'password' => 'PROXY_PASS',
+        );
         $options = array();
 
-        if (isset($options['host'])&&strlen($options['host'])) {
+        if (isset($options['host']) && strlen($options['host'])) {
             $curl_options[CURLOPT_HTTPPROXYTUNNEL] = true;
-            $curl_options[CURLOPT_PROXY] = sprintf("%s%s",$options['host'],(isset($options['port'])&&$options['port']) ? ':'.$options['port'] :'');
+            $curl_options[CURLOPT_PROXY] = sprintf("%s%s", $options['host'], (isset($options['port']) && $options['port']) ? ':' . $options['port'] : '');
 
-            if (isset($options['user'])&&strlen($options['user'])) {
-                $curl_options[CURLOPT_PROXYUSERPWD] = sprintf("%s:%s",$options['user'],$options['password']);
+            if (isset($options['user']) && strlen($options['user'])) {
+                $curl_options[CURLOPT_PROXYUSERPWD] = sprintf("%s:%s", $options['user'], $options['password']);
             }
         }
-        foreach($curl_options as $param=>$option){
+        foreach ($curl_options as $param => $option) {
             curl_setopt($ch, $param, $option);
         }
         return $ch;
     }
 
-    private function getStreamInfo($source_stream,$download_content_length=4096)
+    private function getStreamInfo($source_stream, $download_content_length = 4096)
     {
-        $stream_meta_data=stream_get_meta_data($source_stream);
+        $stream_meta_data = stream_get_meta_data($source_stream);
 
         //read data chunk to determine stream meta data
-        $buf = stream_get_contents($source_stream,$download_content_length);
+        $buf = stream_get_contents($source_stream, $download_content_length);
 
-        $stream_seekable = isset($stream_meta_data['seekable'])?$stream_meta_data['seekable']:false;
+        $stream_seekable = isset($stream_meta_data['seekable']) ? $stream_meta_data['seekable'] : false;
 
         $headers = array();
-        if(isset($stream_meta_data["wrapper_data"]["headers"])){
+        if (isset($stream_meta_data["wrapper_data"]["headers"])) {
             $headers = $stream_meta_data["wrapper_data"]["headers"];
-        }elseif(isset($stream_meta_data["wrapper_data"])){
+        } elseif (isset($stream_meta_data["wrapper_data"])) {
             $headers = $stream_meta_data["wrapper_data"];
         }
 
-
         $header_matches = null;
-        foreach($headers as $header){
-            if(preg_match('/content-length:\s*(\d+)/i',$header,$header_matches)){
+        foreach ($headers as $header) {
+            if (preg_match('/content-length:\s*(\d+)/i', $header, $header_matches)) {
                 $content_length = intval($header_matches[1]);
                 break;
             }
@@ -1616,11 +1601,11 @@ class waInstaller
         $status = 200;
         $status_description = 'none';
         //check server responce codes (500/404/403/302/301/etc)
-        foreach($headers as $header){
-            if(preg_match('@http/\d+\.\d+\s+(\d+)\s+(.+)$@i',$header,$header_matches)){
+        foreach ($headers as $header) {
+            if (preg_match('@http/\d+\.\d+\s+(\d+)\s+(.+)$@i', $header, $header_matches)) {
                 $status = intval($header_matches[1]);
                 $status_description = trim($header_matches[2]);
-                if($status != 200) {
+                if ($status != 200) {
                     throw new Exception("Invalid server response with code {$status} ($status_description)");
                 }
                 break;
@@ -1628,26 +1613,26 @@ class waInstaller
         }
 
         $debug_data = array(
-						'stream_meta_data'=>$stream_meta_data,
-						'headers'=>$headers,
-						'content_length'=>$content_length,
-						'status'=>"{$status} ({$status_description})",
+            'stream_meta_data' => $stream_meta_data,
+            'headers'          => $headers,
+            'content_length'   => $content_length,
+            'status'           => "{$status} ({$status_description})",
         );
 
-        $this->writeLog(__METHOD__.' :Source file headers',self::LOG_DEBUG,$debug_data);
-        return array($content_length,$download_content_length,$buf);
+        $this->writeLog(__METHOD__ . ' :Source file headers', self::LOG_DEBUG, $debug_data);
+        return array($content_length, $download_content_length, $buf);
     }
 
-    private function fopen($file,$mode,$retry = 5)
+    private function fopen($file, $mode, $retry = 5)
     {
         $this->mkdir(dirname($file));
-        while(!($fp = @fopen(self::$root_path.$file,$mode))||!@flock($fp,LOCK_EX)){
-            if($fp) {
+        while (!($fp = @fopen(self::$root_path . $file, $mode)) || !@flock($fp, LOCK_EX)) {
+            if ($fp) {
                 fclose($fp);
             }
-            if(--$retry>0){
+            if (--$retry > 0) {
                 sleep(1);
-            }else{
+            } else {
                 break;
             }
         }
@@ -1656,7 +1641,7 @@ class waInstaller
 
     private function fclose($fp)
     {
-        if($fp && is_resource($fp)) {
+        if ($fp && is_resource($fp)) {
             flock($fp, LOCK_UN);
             fclose($fp);
         }
@@ -1664,8 +1649,8 @@ class waInstaller
 
     function __destruct()
     {
-        if($this->log_handler){
-            $this->writeLog(__METHOD__.' called'."\n\n\n",self::LOG_TRACE);
+        if ($this->log_handler) {
+            $this->writeLog(__METHOD__ . ' called' . "\n\n\n", self::LOG_TRACE);
             fclose($this->log_handler);
         }
     }
@@ -1679,43 +1664,43 @@ class waInstaller
     {
         $class_name = strtolower($class_name);
         $result = false;
-        if(isset(self::$depended_classes[$class_name])){
-            require_once self::$root_path.self::$depended_classes[$class_name];
+        if (isset(self::$depended_classes[$class_name])) {
+            require_once self::$root_path . self::$depended_classes[$class_name];
             $result = true;
         }
         return $result;
     }
 
-    private static function debug_backtrace_custom($names = array('object','args'))
+    private static function debug_backtrace_custom($names = array('object', 'args'))
     {
-        $path = str_replace('\\','/',realpath(dirname(__FILE__).'/../../../'));
+        $path = str_replace('\\', '/', realpath(dirname(__FILE__) . '/../../../'));
         $backtrace = debug_backtrace();
         array_shift($backtrace);
-        if(is_array($names)&&$names){
-            foreach($backtrace as &$backtrace_item){
-                $backtrace_item['file'] = str_replace('','',str_replace($path,'',str_replace('\\','/',$backtrace_item['file']))).':'.$backtrace_item['line'];
+        if (is_array($names) && $names) {
+            foreach ($backtrace as & $backtrace_item) {
+                $backtrace_item['file'] = str_replace('', '', str_replace($path, '', str_replace('\\', '/', $backtrace_item['file']))) . ':' . $backtrace_item['line'];
                 unset($backtrace_item['line']);
-                if(isset($backtrace_item['type'])&&isset($backtrace_item['class'])){
-                    if(isset($backtrace_item['object'])&&(($class = get_class($backtrace_item['object']))!=$backtrace_item['class'])){
+                if (isset($backtrace_item['type']) && isset($backtrace_item['class'])) {
+                    if (isset($backtrace_item['object']) && (($class = get_class($backtrace_item['object'])) != $backtrace_item['class'])) {
                         $backtrace_item['class'] = "{$class}({$backtrace_item['class']})";
                     }
                     $args = array();
-                    foreach($backtrace_item['args'] as $arg){
-                        if(is_object($arg)){
+                    foreach ($backtrace_item['args'] as $arg) {
+                        if (is_object($arg)) {
                             $args[] = get_class($arg);
-                        }elseif(is_array($arg)){
-                            $args[] = 'Array('.count($arg).')';
-                        }else{
+                        } elseif (is_array($arg)) {
+                            $args[] = 'Array(' . count($arg) . ')';
+                        } else {
                             //$args[] = var_export($arg,true);
-                        }
+                            }
                     }
-                    $backtrace_item['function'] = $backtrace_item['class'].$backtrace_item['type'].$backtrace_item['function'].'('.implode(', ',$args).')';
+                    $backtrace_item['function'] = $backtrace_item['class'] . $backtrace_item['type'] . $backtrace_item['function'] . '(' . implode(', ', $args) . ')';
                     unset($backtrace_item['class']);
                     unset($backtrace_item['type']);
                 }
 
-                foreach($names as $name){
-                    if(isset($backtrace_item[$name])){
+                foreach ($names as $name) {
+                    if (isset($backtrace_item[$name])) {
                         unset($backtrace_item[$name]);
                     }
                 }

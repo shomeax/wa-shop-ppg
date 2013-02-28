@@ -1,10 +1,6 @@
 <?php
 
-/**
- * 3-letter ISO 3166 code is used as an id for this waLocalizedCollection
- * !!! filtering is not implemented yet.
- */
-class waCountryModel extends waModel implements waLocalizedCollection
+class waCountryModel extends waModel
 {
     protected $table = 'wa_country';
     protected static $cacheLocale = null;
@@ -25,9 +21,22 @@ class waCountryModel extends waModel implements waLocalizedCollection
         }
     }
 
-    public function filter($parameters, $start=0, $limit=0, $locale=null)
+    public function allWithFav($all=null)
     {
-        throw new waException('Not implemented.'); // !!!
+        if (!$all || !is_array($all)) {
+            $all = array_values($this->all());
+        }
+        $fav = array();
+        foreach($all as $c) {
+            if ($c['fav_sort']) {
+                $fav[] = array('fav_sort' => $c['fav_sort']) + $c;
+            }
+        }
+        if ($fav) {
+            rsort($fav); // sort by fav_sort, desc
+            $fav[] = $this->getEmptyRow(); // delimeter
+        }
+        return array_merge($fav, $all);
     }
 
     public function name($id, $locale=null)
@@ -64,7 +73,6 @@ class waCountryModel extends waModel implements waLocalizedCollection
         }
     }
 
-    // !!! Should probably add this method to waLocalizedCollection interface?
     public function preload($locale=null)
     {
         $locale = $this->ensureLocale($locale);

@@ -230,7 +230,6 @@ class waAutoload
       'waArrayObjectDiff' => 'util/waArrayObjectDiff.class.php',
       'waCSV' => 'util/waCSV.class.php',
       'waHtmlControl' => 'util/waHtmlControl.class.php',
-      'waLocalizedCollection' => 'util/waLocalizedCollection.php',
       'waUtils' => 'util/waUtils.class.php',
 
       'waEmailValidator' => 'validator/waEmailValidator.class.php',
@@ -267,6 +266,7 @@ class waAutoload
       'waContactRightsModel' => 'webasyst/lib/models/waContactRights.model.php',
       'waContactSettingsModel' => 'webasyst/lib/models/waContactSettings.model.php',
       'waContactTokensModel' => 'webasyst/lib/models/waContactTokens.model.php',
+      'waContactFieldValuesModel' => 'webasyst/lib/models/waContactFieldValues.model.php',
       'waCountryModel' => 'webasyst/lib/models/waCountry.model.php',
       'waGroupModel' => 'webasyst/lib/models/waGroup.model.php',
       'waLoginLogModel' => 'webasyst/lib/models/waLoginLog.model.php',

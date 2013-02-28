@@ -41,6 +41,10 @@ class waInstallerApps
     const ITEM_EXTRAS_PATH = 'wa-apps/%s/%s/';
     const ITEM_ICON = 'img/%s.png';
 
+    const PLUGIN_CONFIG = 'wa-plugins/%s/%s/lib/config/plugin.php';
+    const PLUGIN_REQUIREMENTS = 'wa-plugins/%s/%s/lib/config/requirements.php';
+    const PLUGIN_BUILD = 'wa-plugins/%s/%s/lib/config/build.php';
+
     const VENDOR_SELF = 'webasyst';
     const VENDOR_UNKNOWN = 'local';
 
@@ -210,7 +214,9 @@ class waInstallerApps
                 }
                 foreach ($lists[$key] as $id => & $item) {
 
-                    $item['id'] = $item['slug'];
+                    if (empty($item['id'])) {
+                        $item['id'] = $item['slug'];
+                    }
                     if (!empty($item['edition'])) {
                         $item['id'] .= '_'.$item['edition'];
                     }
@@ -419,13 +425,20 @@ class waInstallerApps
      * @param boolean $clean_up
      * @return int|array
      */
-    public static function getUpdateCount(&$items, $minimize = false)
+    public static function getUpdateCount(&$items, $minimize = false, $update_counter = null)
     {
-        $count = array();
-        $count['total'] = 0;
-        $count['applicable'] = 0;
-        $count['payware'] = 0;
-
+        $count = array(
+            'total'      => 0,
+            'applicable' => 0,
+            'payware'    => 0,
+        );
+        if ($update_counter !== null) {
+            if (is_array($update_counter)) {
+                $count = array_merge($count, $update_counter);
+            } else {
+                $count['total'] = $update_counter;
+            }
+        }
         $update_actions = array(self::ACTION_UPDATE, self::ACTION_CRITICAL_UPDATE);
 
         if ($minimize) {
@@ -434,7 +447,7 @@ class waInstallerApps
 
         foreach ($items as $key => & $item) {
             $update = false;
-            if ($item['current'] && ($item['enabled']) /*&& ($app_item['applicable'])*/) {
+            if (!empty($item['current']) && !empty($item['enabled']) /*&& ($app_item['applicable'])*/) {
                 if (in_array($item['action'], $update_actions)) {
                     ++$count['total'];
                     if ($minimize && $item['applicable']) {
@@ -447,7 +460,7 @@ class waInstallerApps
                     $update = true;
                 }
 
-                if (isset($item['extras'])) {
+                if (!empty($item['extras'])) {
                     foreach ($item['extras'] as $type => & $extras) {
                         $extras_count = self::getUpdateCount($extras, $minimize);
                         if (!$minimize) {
@@ -459,8 +472,8 @@ class waInstallerApps
                                 $count[$field] += $extras_counter;
                             }
                         }
-                        unset($extras);
                     }
+                    unset($extras);
                 }
             }
             unset($item);
@@ -468,6 +481,7 @@ class waInstallerApps
                 unset($items[$key]);
             }
         }
+
         return $minimize ? $count : $count['total'];
     }
 
@@ -882,9 +896,58 @@ class waInstallerApps
      *
      * @return array
      */
-    public function getSystemList()
+    public function getSystemList($plugins = false)
     {
-        return $this->getList(self::LIST_SYSTEM, self::VENDOR_SELF);
+        $system_list = $this->getList(self::LIST_SYSTEM, self::VENDOR_SELF);
+        $slugs = array();
+        foreach ($system_list as & $item) {
+            if (!empty($item['subject']) && ($item['subject'] == 'systemplugins')) {
+                $slugs[$item['slug']] = $item['slug'];
+                $item['enabled'] = false;
+                $item['current'] = false;
+                $item['config_path'] = $config = sprintf(self::PLUGIN_CONFIG, $item['type_slug'], $item['id']);
+                if ($item['current'] = $this->getConfig($item['config_path'])) {
+                    $build_path = self::$root_path.$item['slug'].'/lib/config/build.php';
+                    if (file_exists($build_path) && ($build = include($build_path))) {
+                        $item['current']['version'] .= ".{$build}";
+                    }
+                    $item['enabled'] = true;
+                }
+                $item['action'] = self::getApplicableAction($item);
+            }
+        }
+        unset($item);
+        $plugins_path = self::$root_path.'wa-plugins/';
+        $types = file_exists($plugins_path)?scandir($plugins_path):array();
+        foreach ($types as $type) {
+            if (preg_match('/^[a-z_\-\d][a-z_\-\d\.]*$/i', $type)) {
+                $plugins = scandir($plugins_path.$type.'/');
+                foreach ($plugins as $plugin) {
+
+                    if (preg_match('/^[a-z_\-\d][a-z_\-\d\.]*$/i', $plugin)) {
+
+                        $slug = 'wa-plugins/'.$type.'/'.$plugin;
+                        $config_path = sprintf(self::PLUGIN_CONFIG, $type, $plugin);
+                        if (!isset($slugs[$slug]) && ($config = $this->getConfig($config_path))) {
+                            $system_list[$slug] = array(
+                                'slug'        => $slug,
+                                'id'          => $plugin,
+                                'type_slug'   => $type,
+                                'subject'     => 'systemplugins',
+                                'config_path' => $config_path,
+                                'enabled'     => true,
+                                'current'     => $config,
+                                'action'      => self::ACTION_NONE,
+
+                            );
+                            self::fixItemCurrent($system_list[$slug], $slug);
+                        }
+
+                    }
+                }
+            }
+        }
+        return $system_list;
     }
 
     private function getFileContent($path, $allow_caching = false)
@@ -1356,8 +1419,8 @@ class waInstallerApps
 
     private static function getApplicableAction($item)
     {
-        if (isset($item['current']) && $item['current']) {
-            if (isset($item['current']['version'])) {
+        if (!empty($item['current'])) {
+            if (!empty($item['current']['version'])) {
                 if (isset($item['edition']) && ($item['edition'] != $item['current']['edition'])) {
                     $action = self::ACTION_INSTALL;
                 } elseif (version_compare($item['version'], $item['current']['version'], '>')) {

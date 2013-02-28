@@ -13,10 +13,6 @@ abstract class waSystemPlugin
      */
     protected $id;
     protected $key;
-    /*
-     * @var waiPluginSettings
-     */
-    private $adapter;
 
     /**
      *
@@ -25,15 +21,9 @@ abstract class waSystemPlugin
      * @param string $key
      * @throws waException
      */
-    protected function __construct(waiPluginSettings $model = null, $key = null)
+    final protected function __construct($key = null)
     {
-        $this->adapter = $model;
         $this->key = $key;
-        $this->init();
-    }
-
-    protected function init()
-    {
     }
 
     private function __clone()
@@ -64,7 +54,7 @@ abstract class waSystemPlugin
         $path = waSystem::getInstance()->getConfig()->getPath('plugins');
         $path .= DIRECTORY_SEPARATOR.$type;
         if ($id) {
-            if (!preg_match('@^[a-z][a-z0-9_]*$@i', $id)) {
+            if (!preg_match('@^[a-z][a-z0-9_]*$@', $id)) {
                 return null;
             }
             $path .= DIRECTORY_SEPARATOR.$id;
@@ -157,18 +147,7 @@ abstract class waSystemPlugin
     public function getSettings($name = null)
     {
         if ($this->settings === null) {
-            $this->settings = array();
-            if ($config = $this->config()) {
-                $model = $this->adapter();
-                $this->settings = $model->get($this->key);
-                foreach ($config as $key => $default) {
-                    if (!isset($this->settings[$key])) {
-                        $this->settings[$key] = isset($default['value']) ? $default['value'] : null;
-                    } elseif ($json = json_decode($this->settings[$key], true)) {
-                        $this->settings[$key] = $json;
-                    }
-                }
-            }
+            $this->setSettings();
         }
         if ($name === null) {
             return $this->settings;
@@ -177,6 +156,10 @@ abstract class waSystemPlugin
         }
     }
 
+    /**
+     *
+     * @param array $settings
+     */
     protected function setSettings($settings = array())
     {
         $this->settings = array();
@@ -242,8 +225,9 @@ abstract class waSystemPlugin
      * @param waiPluginSettings $adapter
      * @return waShipping
      */
-    public static function factory($id, $adapter = null, $key = null, $type = null)
+    public static function factory($id, $key = null, $type = null)
     {
+        $id = strtolower($id);
         $base_path = self::getPath($type, $id);
         if (!$base_path) {
             throw new waException(sprintf('Invalid module ID %s', $id));
@@ -255,7 +239,7 @@ abstract class waSystemPlugin
         $class = $id.ucfirst($type);
 
         if (class_exists($class)) {
-            $plugin = new $class($adapter, $key);
+            $plugin = new $class($key);
             if (!($plugin instanceof self)) {
                 throw new waException('Invalid parent class');
             }
@@ -351,25 +335,15 @@ abstract class waSystemPlugin
             // remove
             if (!isset($settings[$name])) {
                 $this->settings[$name] = isset($row['value']) ? $row['value'] : null;
-                $this->adapter()->del($this->key, $name);
-            }
+                //$this->getAdapter()->del($this->key, $name);
+                //TODO
+                }
         }
         foreach ($settings as $name => $value) {
             $this->settings[$name] = $value;
             // save to db
-            $this->adapter()->set($this->key, $name, is_array($value) ? json_encode($value) : $value);
+            $this->getAdapter()->setSettings($this->key, $name, $value);
         }
         return $data;
-    }
-
-    /**
-     * @return waiPluginSettings
-     */
-    private function adapter()
-    {
-        if (!$this->adapter) {
-            $this->adapter = new waAppSettingsModel();
-        }
-        return $this->adapter;
     }
 }

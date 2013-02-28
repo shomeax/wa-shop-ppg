@@ -30,6 +30,8 @@ class waContactConditionalField extends waContactField
         $id = $this->getId();
         $parent = $this->getParameter('parent_id');
         if ($parent) {
+            $parent = explode('.', $parent, 2);
+            $parent = $parent[0];
             $id = $parent.':'.$id;
         }
         static $cfdm = null;
@@ -38,7 +40,7 @@ class waContactConditionalField extends waContactField
         }
         $result = array();
         foreach ($cfdm->where('field=?', $id)->order('sort')->query() as $row) {
-            $result[$row['parent_field']][$row['parent_value']][] = $row['value'];
+            $result[$row['parent_field']][mb_strtolower($row['parent_value'])][] = $row['value'];
         }
         return $result;
     }
@@ -111,7 +113,7 @@ class waContactConditionalField extends waContactField
                 }
             }
         }
-        if (!$parent_field) {
+        if (!$parent_field && $possible_options) {
             reset($possible_options);
             $parent_field = key($possible_options);
         }
@@ -153,20 +155,38 @@ class waContactConditionalField extends waContactField
         select.hide();
     };
 
-    parent_field.change(function() {
-        var parent_value = $(this).val();
+    var getVal = function() {
+        if (input.is(':visible')) {
+            return input.val();
+        } else {
+            return select.val();
+        }
+    };
+
+    var handler;
+    parent_field.change(handler = function() {
+        var old_val = getVal();
+        var parent_value = $(this).val().toLowerCase();
         if (values && values[parent_value]) {
+            var options = values[parent_value];
             input.hide();
             select.show().children().remove();
-            for (i = 0; i < values[parent_value].length; i++) {
-                select.append($('<option></option>').attr('value', values[parent_value][i]).text(values[parent_value][i]));
+            for (i = 0; i < options.length; i++) {
+                select.append($('<option></option>').attr('value', options[i]).text(options[i]));
+            }
+            select.val(old_val);
+            if (input[0].hasAttribute('name')) {
+                select.attr('name', input.attr('name'));
+                input[0].removeAttribute('name');
             }
         } else {
             if (!input.is(':visible')) {
                 showInput();
+                input.val(old_val);
             }
         }
     });
+    handler.call(parent_field);
 });};</script>
 EOJS;
         }

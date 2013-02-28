@@ -597,6 +597,7 @@ class waModel
                 if ($type === 'int') {
                     $data[$key] = (int)$value;
                 } elseif ($type === 'like') {
+                    $value = str_replace('\\', '\\\\', $value);
                     $data[$key] = str_replace(array('%', '_'), array('\%', '\_'), $this->adapter->escape($value));
                 } else {
                     $data[$key] = $this->adapter->escape($value);
@@ -608,6 +609,7 @@ class waModel
             case 'int':
                 return (int)$data;
             case 'like':
+                $data = str_replace('\\', '\\\\', $data);
                 return str_replace(array('%', '_'), array('\%', '\_'), $this->adapter->escape($data));
             default:
                 return $this->adapter->escape($data);

@@ -87,14 +87,20 @@ class waContactRegionField extends waContactField
         if ($country) {
             // List of regions for this country
             $rm = new waRegionModel();
-            $options = array(); // !!! TODO: show favourites above the list
-            foreach($rm->getByCountry($country) as $row) {
-                if ($value == $row['code'] || $value == $row['name']) {
-                    $at = ' selected';
+            $options = array();
+            $selected = false;
+            foreach($rm->getByCountryWithFav($country) as $row) {
+                if (strlen($row['name']) <= 0) {
+                    $options[] = '<option disabled>&nbsp;</option>';
                 } else {
-                    $at = '';
+                    if (!$selected && ($value == $row['code'] || $value == $row['name'])) {
+                        $at = ' selected';
+                        $selected = true;
+                    } else {
+                        $at = '';
+                    }
+                    $options[] = '<option value="'.htmlspecialchars($row['code']).'"'.$at.'>'.htmlspecialchars($row['name']).'</option>';
                 }
-                $options[] = '<option value="'.htmlspecialchars($row['code']).'"'.$at.'>'.htmlspecialchars($row['name']).'</option>';
             }
 
             if ($options) {
@@ -157,7 +163,8 @@ class waContactRegionField extends waContactField
         select.hide();
     };
 
-    country_select.change(function() {
+    var change_handler;
+    country_select.change(change_handler = function() {
         var country = $(this).val();
         input.prev('.loading').remove();
         if (region_countries && region_countries[country]) {
@@ -169,7 +176,7 @@ class waContactRegionField extends waContactField
                     input.hide();
                     select.show().children().remove();
                     for (i = 0; i < r.data.oOrder.length; i++) {
-                        select.append($('<option></option>').attr('value', r.data.oOrder[i]).text(r.data.options[r.data.oOrder[i]]));
+                        select.append($('<option></option>').attr('value', r.data.oOrder[i]).text(r.data.options[r.data.oOrder[i]]).attr('disabled', r.data.oOrder[i] === ''));
                     }
                 }
             }, 'json');
@@ -179,6 +186,7 @@ class waContactRegionField extends waContactField
             }
         }
     });
+    change_handler.call(country_select);
 });};</script>
 EOJS;
 

@@ -20,15 +20,42 @@ class waRegionModel extends waModel
         return $this->query($sql, array('country' => $country))->fetchAll('code');
     }
 
+    public function getByCountryWithFav($country_or_regions)
+    {
+        if (!is_array($country_or_regions)) {
+            $all = array_values($this->getByCountry($country_or_regions));
+        } else {
+            $all = $country_or_regions;
+        }
+        $fav = array();
+        foreach($all as $r) {
+            if ($r['fav_sort']) {
+                $fav[] = array('fav_sort' => $r['fav_sort']) + $r;
+            }
+        }
+        if ($fav) {
+            rsort($fav); // sort by fav_sort, desc
+            $fav[] = $this->getEmptyRow(); // delimeter
+        }
+        return array_merge($fav, $all);
+    }
+
     public function saveForCountry($country, $regions)
     {
         $this->deleteByField('country_iso3', $country);
         $data = array();
         foreach($regions as $code => $name) {
+            if (is_array($name)) {
+                $fav_sort = $name['fav_sort'];
+                $name = $name['name'];
+            } else {
+                $fav_sort = null;
+            }
             $data[] = array(
                 'code' => $code,
                 'name' => $name,
                 'country_iso3' => $country,
+                'fav_sort' => $fav_sort,
             );
         }
         if ($data) {

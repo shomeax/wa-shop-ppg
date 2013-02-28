@@ -14,12 +14,72 @@
  */
 abstract class waAppPayment
 {
+    const URL_SUCCESS = 'success';
+    const URL_DECLINE = 'decline';
+    const URL_FAIL = 'fail';
+    const URL_CHECKOUT = 'checkout';
+    /**
+     *
+     *
+     * Merchant identity alias
+     * @var int
+     */
     protected $merchant_id;
     protected $app_id;
 
-    function __construct($merchant_id)
+    final function __construct()
     {
-        $this->merchant_id = $merchant_id;
+        $this->init();
+    }
+
+    protected function init()
+    {
+        if (!$this->app_id) {
+            $this->app_id = wa()->getApp();
+        }
+        $this->merchant_id =& $this->key;
+    }
+
+    /**
+     *
+     * @return string
+     */
+    final public function getAppId()
+    {
+        return $this->app_id;
+    }
+
+    /**
+     *
+     * @param $plugin_id string
+     * @param $key string
+     * @return array
+     */
+    abstract public function getSettings($plugin_id, $key);
+
+    /**
+     *
+     * @param $plugin_id string
+     * @param $key string
+     * @param $settings array key-value
+     * @return array
+     */
+    abstract public function setSettings($plugin_id, $key, $settings);
+
+    /**
+     *
+     * Callback method handler for plugin
+     * @param string $method one of Confirmation, Payment
+     */
+    public final function execCallbackHandler($method)
+    {
+        $args = func_get_args();
+        array_shift($args);
+        $method_name = "callback".ucfirst($method)."Handler";
+        if (!method_exists($this, $method_name)) {
+            throw new waException('Unsupported callback handler method '.$method);
+        }
+        return call_user_func_array(array($this, $method_name), $args);
     }
 
     /**
@@ -43,49 +103,38 @@ abstract class waAppPayment
 
     /**
      *
-     * @param $payment_id string
-     * @param $merchant_key string
-     * @return array
-     */
-    abstract public function getMerchantData($payment_id, $merchant_key);
-
-    /**
-     *
      * @return string
      */
     final public function getMerchantId()
     {
-        return $this->merchant_id;
+        return $this->getPluginKey();
     }
 
     /**
      *
-     * @return string
+     * Get application page for transaction result
+     * @param string $type
+     * @param array $transaction_data formalized transaction data
      */
-    final public function getAppId()
+    public function getBackUrl($type = self::URL_SUCCESS, $transaction_data = array())
     {
-        return $this->app_id;
-    }
-
-    public function execTransaction($transaction, $module_id, $params)
-    {
-        return waPayment::execTransaction($transaction, $module_id, $this, $params);
+        return false;
     }
 
     /**
+     * Execute specified transaction by payment module on $request data
      *
-     * Callback handler for waPayment
-     * @param string $method one of Confirmation, Payment
+     * @example waPayment::execTransaction(waPayment::TRANSACTION_CAPTURE,'AuthorizeNet',$adapter,$params)
+     * @param $transaction
+     * @param $module_id
+     * @param $merchant_id
+     * @param $params
+     * @return mixed
      */
-    public final function execCallbackHandler($method)
+    public function execTransaction($transaction, $module_id, $merchant_id, $params)
     {
-        $args = func_get_args();
-        array_shift($args);
-        $method_name = "callback".ucfirst($method)."Handler";
-        if (!method_exists($this, $method_name)) {
-            throw new waException('Unsupported callback handler method '.$method);
-        }
-        return call_user_func_array(array($this, $method_name), $args);
+        $plugin = waPayment::factory($module_id, $merchant_id, $this);
+        return call_user_func_array(array($plugin, $transaction), $params);
     }
 
     /**
@@ -103,6 +152,14 @@ abstract class waAppPayment
      * @return array|null
      */
     abstract public function callbackCancelHandler($wa_transaction_data);
+
+    /**
+     *
+     *
+     * @param array $wa_transaction_data
+     * @return array|null
+     */
+    abstract public function callbackDeclineHandler($wa_transaction_data);
 
     /**
      *

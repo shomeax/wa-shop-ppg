@@ -17,9 +17,14 @@ class webasystBackendRegionsController extends waJsonController
         }
 
         $rm = new waRegionModel();
-        foreach($rm->getByCountry($country) as $row) {
-            $this->response['options'][$row['code']] = $row['name'];
-            $this->response['oOrder'][] = $row['code'];
+        foreach($rm->getByCountryWithFav($country) as $row) {
+            if ($row['name'] === '') {
+                $this->response['options'][''] = ' ';
+                $this->response['oOrder'][] = '';
+            } else {
+                $this->response['options'][$row['code']] = $row['name'];
+                $this->response['oOrder'][] = $row['code'];
+            }
         }
     }
 }
