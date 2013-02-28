@@ -652,3 +652,51 @@ msgstr "Set up routing"
 msgid "\"%s\""
 msgstr "“%s”"
 
+#: /wa-apps/installer/templates/actions/apps/Apps.html:38
+msgid "License is invalid"
+msgstr ""
+
+#: /wa-apps/installer/templates/actions/plugins/Plugins.html:8
+msgid "By app"
+msgstr ""
+
+#: /wa-apps/installer/templates/actions/plugins/Plugins.html:33
+msgid "By type"
+msgstr ""
+
+#: /wa-apps/installer/templates/actions/update/Update.row.html:21
+msgid "Plugin \"%s\""
+msgstr ""
+
+#: /wa-apps/installer/templates/actions/update/Update.row.html:23
+msgid "Theme \"%s\""
+msgstr ""
+
+#: /wa-apps/installer/lib/classes/installerHelper.class.php:119
+msgid "Payment"
+msgstr ""
+
+#: /wa-apps/installer/lib/classes/installerHelper.class.php:120
+msgid "Shipping"
+msgstr ""
+
+#: /wa-apps/installer/lib/classes/installerHelper.class.php:121
+msgid "SMS"
+msgstr ""
+
+
+#: /wa-apps/installer/templates/actions/update/Update.html:45
+msgid "Install all updates"
+msgstr ""
+
+#: /wa-apps/installer/templates/actions/update/Update.row.html:66
+msgid "License for this app is either expired or not valid for this domain"
+msgstr ""
+
+#: /wa-apps/installer/templates/actions/update/Update.row.html:75
+msgid "Install update"
+msgstr ""
+
+#: /wa-apps/installer/templates/actions/update/Update.row.html:77
+msgid "Update cannot be installed:"
+msgstr ""

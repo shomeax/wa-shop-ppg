@@ -17,31 +17,38 @@ class installerUpdateAction extends waViewAction
     public function execute()
     {
         $this->view->assign('action', 'update');
-        $counter = array('total'=>0,'applicable'=>0);
+        $counter = array(
+            'total'      => 0,
+            'applicable' => 0,
+            'payware'    => 0,
+        );
         $app_list = array();
 
         $this->view->assign('error', false);
         $messages = installerMessage::getInstance()->handle(waRequest::get('msg'));
         try {
             $app_list = installerHelper::getApps($messages, $counter);
-            foreach ($app_list as &$info) {
+            foreach ($app_list as & $info) {
                 if ($info['slug'] == 'installer') {
                     $info['name'] = _w('Webasyst Framework');
                     break;
                 }
             }
             unset($info);
-        } catch(Exception $ex) {
-            $messages[] = array('text'=>$ex->getMessage(), 'result'=>'fail');
+            $plugin_list = installerHelper::getSystemPlugins($messages, $counter);
+        } catch (Exception $ex) {
+            $messages[] = array('text' => $ex->getMessage(), 'result' => 'fail');
         }
 
         installerHelper::checkUpdates($messages);
 
         $this->view->assign('messages', $messages);
         //$this->view->assign('install_counter', $model->get($this->getApp(), 'install_counter'));
+        $this->getConfig()->setCount($counter['total'] ? $counter['total'] : null);
         $this->view->assign('update_counter', $counter['total']);
         $this->view->assign('update_counter_applicable', $counter['applicable']);
         $this->view->assign('apps', $app_list);
+        $this->view->assign('plugins', $plugin_list);
         $this->view->assign('identity_hash', installerHelper::getHash());
         $this->view->assign('title', _w('Updates'));
     }

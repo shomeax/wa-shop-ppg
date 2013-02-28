@@ -117,7 +117,7 @@ dc92ab7b4db7c188a7dab7860089a7e4 *css/jquery-wa/images/ui-icons_454545_256x240.p
 e6a92b732b2dcd7d35552ba0d33e29ae *css/jquery-wa/images/ui-icons_888888_256x240.png
 5d8808d43cefca6f6781a5316d176632 *css/jquery-wa/images/ui-icons_cd0a0a_256x240.png
 e9cfd9da6885db63751fa4957dbe1402 *css/jquery-wa/wa.ui.editor.css
-5ccfdfd502b3b4f64332596ecf24c1af *css/wa/wa-1.0.css
+42245f775850424226f172e837f8f714 *css/wa/wa-1.0.css
 8554d6caae2f5ccce4924cafa7664b56 *css/wa/wa-1.0.ie7.css
 5e94accefb937863f1cd9782bf16ddd6 *css/wa/wa-1.0.ie8.css
 2c0dc3c1d11b63af65929e186a0041cf *css/wa/wa-1.0.ie9.css
@@ -589,7 +589,7 @@ a293f56f3545786825d160021c446b9f *js/jquery-ui/jquery.ui.selectable.min.js
 67ae42285e3c5b91a52aaab465d28dcd *js/jquery-ui/jquery.ui.widget.min.js
 e12928557d8a75bc294cf231fb9fbe99 *js/jquery-ui/version.txt
 efe096a5dbcb8b4681f3bc23d852f4c7 *js/jquery-wa/jquery.autocomplete.js
-a04fa53e22ce542109d76a430866f05e *js/jquery-wa/wa.core.js
+8c822b7473b1cbd41416ef380f9800a4 *js/jquery-wa/wa.core.js
 48109a93808df07d26aec45cd591b09c *js/jquery-wa/wa.dialog.js
 5c54f5b5e1098b9a4e598f6fbd24386a *js/jquery-wa/wa.editor.js
 073ca39fdcfd20668558ac5c4eceda87 *js/jquery-wa/wa.header.js

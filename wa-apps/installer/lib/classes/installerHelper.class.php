@@ -54,7 +54,7 @@ class installerHelper
     public static function getApps(&$messages, &$update_counter = null, $filter = array())
     {
         if ($update_counter !== null) {
-            $update_counter = is_array($update_counter) ? array_fill_keys(array('total', 'applicable', 'payware'), 0) : 0;
+            $update_counter = is_array($update_counter) ? array_merge(array_fill_keys(array('total', 'applicable', 'payware'), 0), $update_counter) : intval($update_counter);
         }
         $app_list = array();
 
@@ -63,11 +63,9 @@ class installerHelper
             self::$model->ping();
             if ($update_counter !== null) {
                 $minimize = is_array($update_counter) ? true : false;
-                $update_counter = waInstallerApps::getUpdateCount($app_list, $minimize);
+                $update_counter = waInstallerApps::getUpdateCount($app_list, $minimize, $update_counter);
                 self::$model->ping();
-                if (!$minimize) {
-                    wa('installer')->getConfig()->setCount($update_counter ? $update_counter : null);
-                }
+
             }
 
         } catch (Exception $ex) {
@@ -106,6 +104,54 @@ class installerHelper
             unset($item);
         }
         return $app_list;
+    }
+
+    public static function getSystemPlugins(&$messages, &$update_counter = null, $filter = array())
+    {
+        if ($update_counter !== null) {
+            $update_counter = is_array($update_counter) ? array_merge(array_fill_keys(array('total', 'applicable', 'payware'), 0), $update_counter) : intval($update_counter);
+        }
+
+        $items = self::getInstaller()->getSystemList();
+        $types = array();
+
+        $icons = array(
+            'sms'      => 'icon16 mobile',
+            'payment'  => 'icon16 dollar',
+            'shipping' => 'icon16 box',
+        );
+        $translate = array(
+            'sms'      => _w('SMS'),
+            'payment'  => _w('Payment'),
+            'shipping' => _w('Shipping'),
+        );
+
+        foreach ($items as $id => $item) {
+            if (!empty($item['subject']) && ($item['subject'] == 'systemplugins')) {
+                $t = $item['type_slug'];
+                if (empty($types[$t])) {
+                    $types[$t] = array(
+                        'name'    => isset($translate[$t]) ? $translate[$t] : null,
+                        'icon'    => isset($icons[$t]) ? $icons[$t] : null,
+                        'plugins' => array(),
+                    );
+                }
+                $types[$t]['plugins'][$item['id']] = $item;
+
+            }
+        }
+        $minimize = is_array($update_counter) ? true : false;
+        foreach ($types as & $items) {
+            if ($update_counter !== null) {
+                $update_counter = waInstallerApps::getUpdateCount($items['plugins'], $minimize, $update_counter);
+                self::$model->ping();
+            }
+        }
+
+        self::$model->ping();
+        unset($items);
+
+        return $types;
     }
 
     public static function isDeveloper()

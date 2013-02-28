@@ -15,5 +15,15 @@
 class installerPluginsAction extends installerItemsAction
 {
     protected $module = 'plugins';
+    public function execute()
+    {
+        parent::execute();
+        $this->view->assign('systemplugins', installerHelper::getSystemPlugins($messages, $this->update_counter));
+        if (waRequest::get('subject') == 'systemplugins') {
+            $this->view->assign('selected_type', waRequest::get('slug'));
+        }
+        $this->getConfig()->setCount($this->update_counter ? $this->update_counter : null);
+        $this->view->assign('update_counter', $this->update_counter);
+    }
 }
 //EOF

@@ -21,15 +21,15 @@ class installerAppsAction extends waViewAction
         $this->view->assign('error', false);
 
         $messages = installerMessage::getInstance()->handle(waRequest::get('msg'));
-
-        $update_counter = 0;
+        $update_counter = null;
         $this->view->assign('apps', installerHelper::getApps($messages, $update_counter));
 
         installerHelper::checkUpdates($messages);
 
         $this->view->assign('identity_hash', installerHelper::getHash());
         $this->view->assign('messages', $messages);
-        $this->view->assign('update_counter', $update_counter);
+        $model = new waAppSettingsModel();
+        $this->view->assign('update_counter', $model->get($this->getApp(), 'update_counter'));
 
         $this->view->assign('extended', $extended);
         $this->view->assign('title', _w('Installer'));

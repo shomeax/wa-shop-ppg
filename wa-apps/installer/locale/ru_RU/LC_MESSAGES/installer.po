@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: WebAsyst\n"
 "POT-Creation-Date: 2011-05-11 17:22+0400\n"
 "PO-Revision-Date: \n"
-"Last-Translator: WebAsyst <support@webasyst.net>\n"
+"Last-Translator: \n"
 "Language-Team: WebAsyst Team\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -159,7 +159,7 @@ msgstr "Удаление временных файлов"
 
 #: /wa-apps/installer/templates/actions/update/UpdateManager.html:27
 msgid "Update"
-msgstr "Обновление"
+msgstr "Обновить"
 
 #: /wa-apps/installer/templates/actions/update/UpdateManager.html:31
 msgid "Resuming"
@@ -727,3 +727,49 @@ msgstr "Установленная версия: %s"
 #: /wa-apps/installer/templates/actions/update/UpdateManager.html:148
 msgid "\"%s\""
 msgstr "«%s»"
+
+#: /wa-apps/installer/templates/actions/plugins/Plugins.html:8
+msgid "By app"
+msgstr "По приложению"
+
+#: /wa-apps/installer/templates/actions/plugins/Plugins.html:33
+msgid "By type"
+msgstr "По типу"
+
+#: /wa-apps/installer/templates/actions/update/Update.row.html:21
+msgid "Plugin \"%s\""
+msgstr "Плагин «%s»"
+
+#: /wa-apps/installer/templates/actions/update/Update.row.html:23
+msgid "Theme \"%s\""
+msgstr "Тема оформления «%s»"
+
+#: /wa-apps/installer/lib/classes/installerHelper.class.php:119
+msgid "Payment"
+msgstr "Платежные системы"
+
+#: /wa-apps/installer/lib/classes/installerHelper.class.php:120
+msgid "Shipping"
+msgstr "Расчет стоимости доставки"
+
+#: /wa-apps/installer/lib/classes/installerHelper.class.php:121
+msgid "SMS"
+msgstr "SMS"
+
+#: /wa-apps/installer/templates/actions/update/Update.html:45
+msgid "Install all updates"
+msgstr "Установить все обновления"
+
+#: /wa-apps/installer/templates/actions/update/Update.row.html:66
+msgid "License for this app is either expired or not valid for this domain"
+msgstr ""
+"Лицензия для этого приложения либо истекла, либо недействительна для данного "
+"домена"
+
+#: /wa-apps/installer/templates/actions/update/Update.row.html:75
+msgid "Install update"
+msgstr "Установить обновление"
+
+#: /wa-apps/installer/templates/actions/update/Update.row.html:77
+msgid "Update cannot be installed:"
+msgstr "Обновление не может быть установлено:"

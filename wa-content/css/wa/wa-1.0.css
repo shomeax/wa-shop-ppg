@@ -20,19 +20,12 @@
  * http://meyerweb.com/eric/tools/css/reset/ 
  * v2.0 | 20110126
  * License: none (public domain)
- * Thanks, Eric! :)
 */
 
-html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, /* ol, ul, li, */ fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video { margin: 0; padding: 0; border: 0; font-size: 100%; /* 	font: inherit; */
-	/* vertical-align: baseline; */ }
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, /* ol, ul, li, */ fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video { margin: 0; padding: 0; border: 0; font-size: 100%; }
 /* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section { display: block; }
 body { line-height: 1; }
-/*
-ol, ul {
-	list-style: none;
-}
-*/
 blockquote, q { quotes: none; }
 blockquote:before, blockquote:after, q:before, q:after { content: ''; content: none; }
 table { border-collapse: collapse; border-spacing: 0; }
@@ -597,6 +590,10 @@ table.zebra.padded th { padding: 4px 8px; }
 table.zebra.padded td { padding: 8px; }
 table.zebra.double-padded th { padding: 4px 10px; }
 table.zebra.double-padded td { padding: 10px; }
+table.zebra td.top-padded { padding-top: 15px; }
+table.zebra td.bottom-padded { padding-bottom: 15px; }
+table.zebra td.top-double-padded { padding-top: 25px; }
+table.zebra td.bottom-double-padded { padding-bottom: 25px; }
 
 table.full-width { width: 100% !important; }
 table.bottom-bordered { border-bottom: 1px solid #aaa; }
@@ -947,8 +944,12 @@ i.icon10 { background-repeat:no-repeat; background-image: url(../../../wa-conten
  */
 
 .ui-slider { width: 200px; }
-.ui-slider-horizontal { height: 0.1em; }
-.ui-slider-horizontal .ui-slider-handle { top: -0.3em; margin-left: -0.4em; height: 0.6em; width: 0.5em; }
+.ui-slider-horizontal { height: 2px; border: none; }
+.ui-slider-horizontal .ui-slider-handle,
+.ui-slider-horizontal .ui-slider-handle.ui-state-focus { top: -0.55em; margin-left: -0.4em; height: 1em; width: 0.5em; border-color: #aaa; box-shadow: 0 1px 4px rgba(0,0,0,0.25); border-radius: 0; }
+.ui-slider-horizontal .ui-slider-handle.ui-state-hover { border-color: #999; box-shadow: 0 1px 4px rgba(0,0,0,0.35); }
+.ui-slider-horizontal.ui-widget-content { background: #bbb; }
+.ui-slider-horizontal .ui-widget-header { background: #0a0; height: 4px; position: relative; top: -1px; }
 .ui-state-default { background-color: #dd8; border-color: #855; }
 .ui-datepicker { font-family:'Lucida Grande', Helvetica, Arial, sans-serif; }
 .ui-datepicker.ui-widget-content { -moz-border-radius: 10px 10px 10px 10px; -webkit-border-radius: 10px 10px 10px 10px; border-radius: 10px 10px 10px 10px; -moz-box-shadow: 0 0 20px #BBBBBB; background: none repeat scroll 0 0 #FFFFFF; border: 7px solid #F3F3F3; }

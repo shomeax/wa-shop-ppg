@@ -5,7 +5,7 @@
     {/if}
     <div class="sidebar left200px">
         <div class="i-plugin-list">
-            <ul class="menu-v with-icons">
+            <ul class="menu-v with-icons stack">
                  {foreach $apps as $app_id => $app}
                     {if !empty($app.current) && $app.enabled} {assign var=app_id value=$app.slug}
                         <li {if isset($slug)&&$slug==$app.slug && (!isset($vendor) || $vendor==$app.vendor)}class="selected"{/if}>

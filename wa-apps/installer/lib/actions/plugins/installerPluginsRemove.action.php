@@ -23,6 +23,7 @@ class installerPluginsRemoveAction extends installerExtrasRemoveAction
     protected function removeExtras($app_id, $extras_id, $info)
     {
         try {
+            $paths = array();
             $plugin_instance = waSystem::getInstance($app_id)->getPlugin($extras_id);
             if (!$plugin_instance) {
                 return false;
@@ -30,18 +31,17 @@ class installerPluginsRemoveAction extends installerExtrasRemoveAction
             $plugin_instance->uninstall();
             $this->installer->updateAppPluginsConfig($app_id, $extras_id, null);
 
-            $paths = array();
             //wa-apps/$app_id/plugins/$slug
             $paths[] = wa()->getAppPath("{$this->extras_type}/{$extras_id}", $app_id);
-            $paths[] = wa()->getTempPath(null, $app_id);//wa-cache/temp/$app_id/
-            $paths[] = wa()->getAppCachePath(null, $app_id);//wa-cache/apps/$app_id/
+            $paths[] = wa()->getTempPath(null, $app_id); //wa-cache/temp/$app_id/
+            $paths[] = wa()->getAppCachePath(null, $app_id); //wa-cache/apps/$app_id/
 
             foreach ($paths as $path) {
                 waFiles::delete($path, true);
             }
 
-            return  true;
-        } catch(Exception $ex) {
+            return true;
+        } catch (Exception $ex) {
             //TODO check config
             $this->installer->updateAppPluginsConfig($app_id, $extras_id, true);
             throw $ex;

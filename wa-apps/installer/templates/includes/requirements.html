@@ -2,14 +2,14 @@
 {if !empty($item.requirements)}
     {capture name='warning'}
         {assign var=warning_meets value=''}
-        {if !isset($class)}{assign var=class value="hint"}{/if}
+        {if !isset($class)}{assign var=class value="small"}{/if}
         {if !isset($icon)}{assign var=icon value=false}{/if}
 
         <ul class="menu-v">
             {foreach $item.requirements as $requirement}
                 {if $requirement.warning && !$requirement.passed} {assign var=warning_meets value=true}
                     <li>
-                        <span class="small {$class}" title="{$requirement.name|escape}">
+                        <span class="{$class}" title="{$requirement.name|escape}">
                             {if $icon}<i class="icon10 no{if $requirement.passed}-bw{/if}"></i>{/if}
                             {$requirement.warning|default:$requirement.note|escape}
                         </span>

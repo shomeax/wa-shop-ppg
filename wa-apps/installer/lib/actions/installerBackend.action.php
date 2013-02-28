@@ -39,7 +39,6 @@ class installerBackendAction extends waViewAction
             $app_list = $apps->getApplicationsList(false, array(), wa()->getDataPath('images', true));
             $update_counter=waInstallerApps::getUpdateCount($app_list);
             $model->ping();
-            $this->getConfig()->setCount($update_counter);
         } catch(Exception $ex) {
             //$this->view->assign('error', $ex->getMessage());
         }

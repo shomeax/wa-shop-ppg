@@ -18,25 +18,25 @@ class installerSettingsAction extends waViewAction
     {
         $model = new waAppSettingsModel();
         $settings = array(
-			'name'					=> 'Webasyst',
-			'url'					=> wa()->getRootUrl(true),
-        //'auth_type'				=> 'login',
-			'auth_form_background'	=> null,
-			'auth_form_background_stretch'=>1,
-        //'license'=>'',
-			'locale'				=> 'ru_RU',
-			'email'					=> '',
-			'rememberme'			=> 1,
+            'name'                         => 'Webasyst',
+            'url'                          => wa()->getRootUrl(true),
+            //'auth_type'				=> 'login',
+            'auth_form_background'         => null,
+            'auth_form_background_stretch' => 1,
+            //'license'=>'',
+            'locale'                       => 'ru_RU',
+            'email'                        => '',
+            'rememberme'                   => 1,
         );
 
         $config_settings = array(
-			'debug'					=> 'boolean',
+            'debug' => 'boolean',
         );
 
         $flush_settings = array('debug');
 
         $config_path = waSystem::getInstance()->getConfigPath().'/config.php';
-        $config = file_exists($config_path)?include($config_path):array();
+        $config = file_exists($config_path) ? include($config_path) : array();
         if (!is_array($config)) {
             $config = array();
         }
@@ -46,7 +46,7 @@ class installerSettingsAction extends waViewAction
         $message = array();
         try {
             $messages = installerMessage::getInstance()->handle(waRequest::get('msg'));
-            foreach ($settings as $setting => &$value) {
+            foreach ($settings as $setting => & $value) {
                 if (waRequest::post() && !in_array($setting, array('auth_form_background'))) {
                     $post_value = waRequest::post($setting, '', 'string_trim');
                     if (!is_null($post_value)) {
@@ -67,13 +67,14 @@ class installerSettingsAction extends waViewAction
                 if (!is_array($config_values)) {
                     $config_values = array();
                 }
-                foreach ($config_settings as $setting=>$type) {
+                foreach ($config_settings as $setting => $type) {
                     $value = isset($config_values[$setting]) ? $config_values[$setting] : false;
                     switch ($type) {
-                        case 'boolean': {
-                            $value = $value?true:false;
-                            break;
-                        }
+                        case 'boolean':
+                            {
+                                $value = $value ? true : false;
+                                break;
+                            }
                     }
                     if (!isset($config[$setting]) || ($config[$setting] !== $value)) {
                         $config[$setting] = $value;
@@ -94,11 +95,10 @@ class installerSettingsAction extends waViewAction
 
                 $model->ping();
 
-
             }
 
             if ($changed || $config_changed) {
-                $message[] ='[`Settings saved`]';
+                $message[] = '[`Settings saved`]';
             }
             $name = preg_replace('/\?.*$/', '', $settings['auth_form_background']);
             $path = wa()->getDataPath($name, true, 'webasyst');
@@ -151,20 +151,20 @@ class installerSettingsAction extends waViewAction
 
             if ($message) {
                 $params = array();
-                $params['module']='settings';
-                $params['msg'] =installerMessage::getInstance()->raiseMessage(implode(', ', $message));
+                $params['module'] = 'settings';
+                $params['msg'] = installerMessage::getInstance()->raiseMessage(implode(', ', $message));
                 $this->redirect($params);
             }
 
         } catch (waException $ex) {
             $msg = installerMessage::getInstance()->raiseMessage($ex->getMessage(), installerMessage::R_FAIL);
             $params = array(
-				'module'=>'settings',
-				'msg'=>$msg
+                'module' => 'settings',
+                'msg'    => $msg
             );
             if ($message) {
                 //$params['success'] = base64_encode(implode(', ', $message));
-            }
+                }
             $this->redirect($params);
         }
 
@@ -176,7 +176,6 @@ class installerSettingsAction extends waViewAction
             $version .= '.'.$apps['installer']['build'];
         }
         $this->view->assign('version', $version);
-
 
         $this->view->assign('settings', $settings);
         $this->view->assign('config', $config);

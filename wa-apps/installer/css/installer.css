@@ -46,6 +46,7 @@ table.zebra.i-updates tr.i-top-extra-row td { background: #f7f7f7; padding-top: 
 table.zebra.i-updates tr.i-app-framework td { height: 48px; /* because of absent icon */ }
 table.zebra.i-updates td.i-update-column a { display: inline; text-decoration: underline; }
 table.zebra.i-updates td input { font-size: 0.9em; }
+table.zebra.i-updates td a { display: inline; }
 
 .i-message-success { border-bottom: 1px solid #ccc; background: #dfd; font-weight: bold; }
 .i-message-fail { border-bottom: 1px solid #ccc; background: #fdd; font-weight: bold; }
@@ -56,8 +57,9 @@ table.zebra.i-updates td input { font-size: 0.9em; }
 
 .i-requirement-warning { color: red; }
 
+.i-plugin-list h5 { margin: 10px 10px 0; }
 .i-plugin-list ul.menu-v.with-icons li { margin: 3px 3px 5px -1px; }
-.i-plugin-list ul.menu-v.with-icons li a { padding-left: 26px; padding-top: 7px; padding-bottom: 7px; }
+.i-plugin-list ul.menu-v.with-icons li a { padding-left: 26px; }
 .i-plugin-list .i-app16x16icon-menu-v { width: 16px; height: 16px; left:6px; position:absolute; top:4px; }
 .i-plugin-settings { border-left: 1px solid #ccc; background: #fff; }
 

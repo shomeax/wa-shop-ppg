@@ -21,8 +21,9 @@ class installerUpdateExecuteController extends waJsonController
         if ($update_ids && is_array($update_ids)) {
             ob_start();
             $app_ids = array();
+            $plugins_ids = array();
             $vendors = array();
-            foreach ($update_ids as $app_id=>&$info) {
+            foreach ($update_ids as $app_id => & $info) {
                 if (!is_array($info)) {
                     if (strpos($info, ':') === false) {
                         $vendor = $info;
@@ -30,7 +31,7 @@ class installerUpdateExecuteController extends waJsonController
                     } else {
                         list($vendor, $edition) = explode(':', $info, 2);
                     }
-                    $app_ids[$app_id] = array('vendor'=>$info, 'slug'=>$app_id);
+                    $app_ids[$app_id] = array('vendor' => $info, 'slug' => $app_id);
                 } else {
                     if (isset($info['slug'])) {
                         $app_id = $info['slug'];
@@ -45,31 +46,42 @@ class installerUpdateExecuteController extends waJsonController
             $license = $model->get('webasyst', 'license', false);
             $locale = wa()->getLocale();
             try {
-                $log_level = waSystemConfig::isDebug()?waInstaller::LOG_DEBUG:waInstaller::LOG_WARNING;
+                $log_level = waSystemConfig::isDebug() ? waInstaller::LOG_DEBUG : waInstaller::LOG_WARNING;
                 $thread_id = $this->getRequest()->request('thread_id', false);
                 $updater = new waInstaller($log_level, $thread_id);
                 $this->getStorage()->close();
                 $updater->init();
                 $apps = new waInstallerApps($license, $locale, false);
                 $app = $this->getApp();
+                if (isset($app_ids[$app]) || true) {
+                    $system_list = $apps->getSystemList();
+                }
 
                 if (isset($app_ids[$app])) {
                     #update system items
-                    $system_list = $apps->getSystemList();
-                    foreach ($system_list as $target=>$item) {
-                        $this->add(!empty($item['target']) ? $item['target'] : $item['slug'], $item);
+                    foreach ($system_list as $target => $item) {
+                        if (empty($item['subject'])) {
+                            $this->add(!empty($item['target']) ? $item['target'] : $item['slug'], $item);
+                        }
+                    }
+                }
+
+                foreach ($system_list as $target => $item) {
+                    if (!empty($item['subject']) && ($item['subject'] == 'systemplugins') && isset($app_ids[$item['slug']])) {
+                        $this->add(!empty($item['target']) ? $item['target'] : $item['slug'], $item, $item['slug']);
+                        unset($app_ids[$item['slug']]);
                     }
                 }
 
                 $app_list = $apps->getApplicationsList(false, $vendors, wa()->getDataPath('images', true));
                 $model->ping();
-                $this->pass = (count($this->urls) || (count($app_ids)>1))?true:false;
+                $this->pass = (count($this->urls) || (count($app_ids) > 1)) ? true : false;
                 $added = true;
-                $execute_actions = array( waInstallerApps::ACTION_INSTALL, waInstallerApps::ACTION_CRITICAL_UPDATE, waInstallerApps::ACTION_UPDATE);
+                $execute_actions = array(waInstallerApps::ACTION_INSTALL, waInstallerApps::ACTION_CRITICAL_UPDATE, waInstallerApps::ACTION_UPDATE);
                 while ($app_ids && $added) {
 
                     $added = false;
-                    foreach ($app_list as &$info) {
+                    foreach ($app_list as & $info) {
                         $app_id = $info['slug'];
                         if ($app_id == 'installer') {
                             $info['name'] = _w('Webasyst Framework');
@@ -82,11 +94,11 @@ class installerUpdateExecuteController extends waJsonController
                             unset($app_ids[$app_id]);
                         }
                         if (isset($info['extras']) && is_array($info['extras'])) {
-                            foreach ($info['extras'] as $subject=>$extras) {
-                                foreach ($extras as $extras_id=>$extras_info) {
+                            foreach ($info['extras'] as $subject => $extras) {
+                                foreach ($extras as $extras_id => $extras_info) {
                                     $extras_id = $app_id.'/'.$subject.'/'.$extras_id;
                                     if (isset($app_ids[$extras_id]) && installerHelper::equals($app_ids[$extras_id], $extras_info)) {
-                                        if( !empty($app_ids[$extras_id]['dependent']) && (empty($extras_info['action']) || !in_array($extras_info['action'],$execute_actions))) {
+                                        if (!empty($app_ids[$extras_id]['dependent']) && (empty($extras_info['action']) || !in_array($extras_info['action'], $execute_actions))) {
                                             continue;
                                         }
                                         $target = 'wa-apps/'.$extras_id;
@@ -94,7 +106,7 @@ class installerUpdateExecuteController extends waJsonController
                                         $this->add($target, $extras_info, $extras_info['slug']);
 
                                         if ($extras_info['dependency']) {
-                                            foreach($extras_info['dependency'] as $dependency) {
+                                            foreach ($extras_info['dependency'] as $dependency) {
                                                 $app_ids[$dependency] = $app_ids[$extras_id];
                                                 $app_ids[$dependency]['slug'] = $dependency;
                                                 $app_ids[$dependency]['dependent'] = $target;
@@ -106,7 +118,7 @@ class installerUpdateExecuteController extends waJsonController
                                             if (!empty($extras_info['current']['parent_theme_id'])) {
                                                 $parent_id = $extras_info['current']['parent_theme_id'];
                                                 $parent_app_id = $app_id;
-                                                if (strpos($parent_id,':')) {
+                                                if (strpos($parent_id, ':')) {
                                                     list($parent_app_id, $parent_id) = explode(':', $parent_id);
                                                 }
                                                 $dependency = "{$parent_app_id}/{$subject}/{$parent_id}";
@@ -134,10 +146,10 @@ class installerUpdateExecuteController extends waJsonController
                     if (!$user->isAdmin()) {
                         $set_rights = true;
                     }
-                    foreach ($this->urls as $url) {
+                    foreach ($this->urls as $target => $url) {
                         //TODO workaround exceptions
-                        if (!isset($url['skipped']) || !$url['skipped']) {
-                            $apps->installWebAsystItem($url['slug'], null , isset($url['edition'])?$url['edition']:true);
+                        if ((!isset($url['skipped']) || !$url['skipped']) && preg_match('@^wa-apps@', $target)) {
+                            $apps->installWebAsystItem($url['slug'], null, isset($url['edition']) ? $url['edition'] : true);
                             if ($set_rights) {
                                 $user->setRight($url['slug'], 'backend', 2);
                             }
@@ -145,7 +157,7 @@ class installerUpdateExecuteController extends waJsonController
                     }
                 }
                 $secure_properties = array('archive', 'source', 'backup', 'md5', 'extract_path');
-                foreach ($result_urls as &$result_url) {
+                foreach ($result_urls as & $result_url) {
                     foreach ($secure_properties as $property) {
                         if (isset($result_url[$property])) {
                             unset($result_url[$property]);
@@ -169,7 +181,6 @@ class installerUpdateExecuteController extends waJsonController
                     }
                 }
 
-
                 $model->ping();
                 $this->getConfig()->setCount(false);
 
@@ -177,7 +188,7 @@ class installerUpdateExecuteController extends waJsonController
                 $response->addHeader('Content-Type', 'application/json; charset=utf-8');
                 $response->sendHeaders();
 
-            } catch(Exception $ex) {
+            } catch (Exception $ex) {
                 $this->setError($ex->getMessage());
             }
             if ($ob = ob_get_clean()) {
@@ -191,38 +202,35 @@ class installerUpdateExecuteController extends waJsonController
 
     protected function add($target, $info, $item_id = null)
     {
-
         $this->urls[$target] = array(
-            'source'=>$info['download_link'],
-            'target'=>$target,
-            'slug'=>$target,
-            'md5'=>!empty($info['md5']) ? $info['md5'] : null,
+            'source' => $info['download_link'],
+            'target' => $target,
+            'slug'   => $target,
+            'md5'    => !empty($info['md5']) ? $info['md5'] : null,
         );
 
         if ($item_id) {
 
-
-            $this->urls[$target] = array_merge($this->urls[$target],
-            array(
-                'slug'=>$item_id,
-                'pass'=>$this->pass && ($this->getAppId()!=$item_id),
-                'name'=>$info['name'],
-                'img'=>$info['img'],
-                'update'=>$info['current']?true:false,
-                'subject'=>empty($info['subject']) ? 'system' : $info['subject'],
-                'edition'=>empty($info['edition']) ? true : $info['edition'],
+            $this->urls[$target] = array_merge($this->urls[$target], array(
+                'slug'    => $item_id,
+                'pass'    => $this->pass && ($this->getAppId() != $item_id),
+                'name'    => $info['name'],
+                'img'     => $info['img'],
+                'update'  => $info['current'] ? true : false,
+                'subject' => empty($info['subject']) ? 'system' : $info['subject'],
+                'edition' => empty($info['edition']) ? true : $info['edition'],
             ));
 
         }
-        if(false){
+        if (false) {
             $this->urls[$target] = array(
-            'slug'=>$extras_info['slug'],
-            'pass'=>$pass && ($this->getAppId()!=$app_id),
-            'img'=>$extras_info['img'],
-            'update'=>$extras_info['current']?true:false,
-            'subject'=>'app_'.$subject,
+                'slug'    => $extras_info['slug'],
+                'pass'    => $pass && ($this->getAppId() != $app_id),
+                'img'     => $extras_info['img'],
+                'update'  => $extras_info['current'] ? true : false,
+                'subject' => 'app_'.$subject,
             );
         }
     }
 }
-//EOF
+//EOF;

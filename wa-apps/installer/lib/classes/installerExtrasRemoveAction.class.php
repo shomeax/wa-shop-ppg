@@ -29,7 +29,8 @@ abstract class installerExtrasRemoveAction extends waViewAction
 
         $module = $this->extras_type;
         $url = parse_url(waRequest::server('HTTP_REFERER'), PHP_URL_QUERY);
-        if (preg_match("/(^|&)module=(update|apps|{$this->extras_type})($|&)/", $url, $matches)) {
+        if (preg_match("/(^|&)module=(update|apps| {
+            $this->extras_type})($|&)/", $url, $matches)) {
             $module = $matches[2];
         }
 
@@ -48,13 +49,13 @@ abstract class installerExtrasRemoveAction extends waViewAction
                  _w("Unable to delete application's plugins (developer version is on)");
                  */
 
-                $message =  "Unable to delete application's {$this->extras_type} (developer version is on)";
+                $message = "Unable to delete application's {$this->extras_type} (developer version is on)";
                 throw new waException(_w($message));
             }
             $vendors = array();
-            foreach ($extras_ids as $extras_id=>&$info) {
+            foreach ($extras_ids as $extras_id => & $info) {
                 if (!is_array($info)) {
-                    $info = array('vendor'=>$info);
+                    $info = array('vendor' => $info);
                 }
                 $vendors[] = $info['vendor'];
                 unset($info);
@@ -67,7 +68,7 @@ abstract class installerExtrasRemoveAction extends waViewAction
             $deleted_extras = array();
             foreach ($app_list as $app) {
                 if (isset($app['extras']) && $app['extras'] && isset($app['extras'][$this->extras_type]) && $app['extras'][$this->extras_type]) {
-                    foreach ($app['extras'][$this->extras_type] as $extras_id=>$info) {
+                    foreach ($app['extras'][$this->extras_type] as $extras_id => $info) {
                         $slug = $info['slug'];
                         if (isset($extras_ids[$slug]) && ($extras_ids[$slug]['vendor'] == $info['current']['vendor'])) {
                             if (isset($info['system']) && $info['system']) {
@@ -76,18 +77,32 @@ abstract class installerExtrasRemoveAction extends waViewAction
                                  _w("Can not delete system application's plugins \"%s\"");
                                  */
 
-                                $message =  "Can not delete system application's {$this->extras_type} \"%s\"";
+                                $message = "Can not delete system application's {$this->extras_type} \"%s\"";
                                 throw new waException(sprintf(_w($message), $info['name']));
                             }
                             if ($this->removeExtras($app['slug'], $extras_id, $info)) {
                                 $deleted_extras[] = "{$info['name']} ({$app['name']})";
                             }
+                            unset($extras_ids[$slug]);
                         }
                     }
                 }
             }
+
+            foreach ($extras_ids as $slug => $data) {
+                if (preg_match('@^wa-plugins/([^/]+/[^/]+)$@', $slug, $matches)) {
+
+                    $path = wa()->getConfig()->getPath('plugins').'/'.$matches[1];
+                    $info_path = $path.'/lib/config/plugin.php';
+                    if (file_exists($info_path) && ($info = include($info_path))) {
+                        waFiles::delete($path, true);
+                        $deleted_extras[] = empty($info['name']) ? $matches[1] : $info['name'];
+                    }
+                }
+            }
+
             if (!$deleted_extras) {
-                $message =  sprintf('Application %s not found', $this->extras_type);
+                $message = sprintf('Application %s not found', $this->extras_type);
                 throw new waException(_w($message));
             }
             /*
@@ -98,10 +113,10 @@ abstract class installerExtrasRemoveAction extends waViewAction
             $message_plural = sprintf('Applications %a %%s have been deleted', $this->extras_type);
             $message = sprintf(_w($message_singular, $message_plural, count($deleted_extras), false), implode(', ', $deleted_extras));
             $msg = installerMessage::getInstance()->raiseMessage($message);
-            $this->redirect(array('module'=>$module, 'msg'=>$msg));
-        } catch(Exception $ex) {
+            $this->redirect(array('module' => $module, 'msg' => $msg));
+        } catch (Exception $ex) {
             $msg = installerMessage::getInstance()->raiseMessage($ex->getMessage(), installerMessage::R_FAIL);
-            $this->redirect(array('module'=>$module, 'msg'=>$msg));
+            $this->redirect(array('module' => $module, 'msg' => $msg));
         }
 
     }
