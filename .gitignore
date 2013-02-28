@@ -1,6 +1,8 @@
 .status
 wa-cache/*
 wa-config/auth.php
+wa-config/apps.php
+wa-config/config.php
 wa-config/db.php
 wa-data/protected/wa-installer/backup/*
 wa-log/*
