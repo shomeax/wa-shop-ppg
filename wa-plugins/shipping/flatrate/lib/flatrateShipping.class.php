@@ -5,6 +5,7 @@
  * @property-read float $cost
  * @property-read string $currency
  * @property-read string $delivery
+ * @property-read string $promt_address
  *
  */
 class flatrateShipping extends waShipping
@@ -19,35 +20,42 @@ class flatrateShipping extends waShipping
      */
     public function calculate()
     {
+        /*
+         Use following methods to obtain package information:
+
+         — $this->getTotalWeight(); // returns overall package weight
+         — $this->getTotalPrice(); // returns declared shipment value
+         — $this->getRecipientName(); // returns full name of the package recipient
+         — $this->getAddress($field = null); // returns either entire address (array) or exact address field, e.g. 'country', 'region', 'city', 'zip', 'street' or any custom defined field
+
+         Use $this->VAR_ID to access module settings as defined in the config/settings.php
+         */
+
         return array(
             'ground' => array(
                 'name' => /*_wp*/('Ground shipping'),
                 'description' => /*_wp*/(''),
-                'est_delivery' => waDateTime::format('humandate',  strtotime($this->delivery) ), //string
+                'est_delivery' => waDateTime::format('humandate', strtotime($this->delivery)), //string
                 'currency' => $this->currency,
                 'rate' => $this->cost,
             ),
-/*
-            //ADD AS MANY SHIPPING OPTIONS AS YOU LIKE
-            'priority' => array(
-                'name' => 'Priority shipping',
-                'description' => '',
-                'estimated_delivery_date' => strtotime($this->delivery),
-                'currency' => $this->currency,
-                'rate_min' => $this->cost,
-                'rate_max' => $this->cost,
-                'rate' => $this->cost,
-            ),
-            'expedited' => array(
-                'name' => 'Expedited shipping',
-                'description' => '',
-                'estimated_delivery_date' => strtotime($this->delivery),
-                'currency' => $this->currency,
-                'rate_min' => $this->cost,
-                'rate_max' => $this->cost,
-                'rate' => $this->cost,
-            ),
-*/
+            /*
+             //ADD AS MANY SHIPPING OPTIONS AS YOU LIKE
+             'priority' => array(
+             'name' => 'Priority shipping',
+             'description' => '',
+             'estimated_delivery_date' => strtotime($this->delivery),
+             'currency' => $this->currency,
+             'rate' => $this->cost,
+             ),
+             'expedited' => array(
+             'name' => 'Expedited shipping',
+             'description' => '',
+             'estimated_delivery_date' => strtotime($this->delivery),
+             'currency' => $this->currency,
+             'rate' => $this->cost,
+             ),
+             */
         );
     }
 
@@ -73,41 +81,41 @@ class flatrateShipping extends waShipping
 
     /**
      * Returns the general tracking information (HTML)
-     * @see waShipping::allowedWeightUnit()
+     * @see waShipping::tracking()
+     * @example return 'Online shipment tracking: <a href="link">link</a>';
      */
     public function tracking($tracking_id = null)
     {
-        return ''; // return 'Online shipment tracking: <a href="link">link</a>';
+        return '';
     }
 
     /**
      * Returns the list of printable forms this module offers
+     * @example <pre> return array(
+     *    'flatrate_form' => array(
+     *        'name' => _wp('Sample consignment note'),
+     *        'description' => _wp('Sample consignment description'),
+     *    ),
+     * );</pre>
      */
     public function getPrintForms()
     {
-        return array(
-            'flatrate_form' => array(
-                'name' => /*_wp*/('Sample consignment note'),
-                'description' => /*_wp*/(''),
-            ),
-        );
+        return array();
     }
 
     /**
      * Displays the print form content (HTML).
      * Form id list is defined in getPrintForms() method
      */
-    public function displayPrintForm($id, $items = null, $address = null, $params = array())
+    public function displayPrintForm($id, waOrder $order, $params = array())
     {
         if ($id = 'flatrate_form') {
             $view = wa()->getView();
-            $view->assign('currency', $this->currency);
-            $view->assign('items', $items);
-            $view->assign('address', $address);
+            $view->assign('order', $order);
             $view->assign('params', $params);
             return $view->fetch($this->path.'/templates/form.html');
         } else {
-            throw new waException(/*_wp*/('Printable form not found'));
+            throw new waException( /*_wp*/('Printable form not found'));
         }
     }
 
@@ -119,5 +127,10 @@ class flatrateShipping extends waShipping
         return array(
 
         );
+    }
+
+    public function requestedAddressFields()
+    {
+        return $this->promt_address ? array() : false;
     }
 }

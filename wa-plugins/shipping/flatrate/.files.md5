@@ -1,8 +1,9 @@
+667935a416553f1cec6b2fb86b599999 *img/flatrate.png
 f4f3e1686fa517bcf5cec2fe8e2828ca *img/flatrate16.png
-2db1b54b6e3de2173c19b0e3ec0362b7 *lib/config/build.php
-19ec7d1e71b8bacff539cc04b3fac92f *lib/config/plugin.php
-85c398e1a048e28bc3097153f7d458ec *lib/config/settings.php
-717bd7102d7a37f4f79c840c03996214 *lib/flatrateShipping.class.php
+9f6fba90d6d1885244a1bcc76c248145 *lib/config/build.php
+e9b12ef2242d90363a212d754f4991d9 *lib/config/plugin.php
+0188c3d40fb159a2c49ca35b84b9cee7 *lib/config/settings.php
+8a45bb5d3578d1d53480ff03e4764805 *lib/flatrateShipping.class.php
 3f081fb994c60369afdb38fe3d2bc849 *locale/en_US/LC_MESSAGES/shipping_FlatRate.po
 6417e115e69b9b02b69b15091086d60a *locale/ru_RU/LC_MESSAGES/shipping_FlatRate.po
-fd03946a0f5c57e05ea055f2e3da0026 *templates/form.html
+ac7a2f98ec910b8ae7393c177fdd3a7e *templates/form.html
