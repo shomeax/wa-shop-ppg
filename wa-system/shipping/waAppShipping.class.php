@@ -30,7 +30,7 @@ abstract class waAppShipping
      * @param $settings array key-value
      * @return array
      */
-    abstract public function setSettings($plugin_id, $key, $settings);
+    abstract public function setSettings($plugin_id, $key, $name, $value);
 
     /**
      *

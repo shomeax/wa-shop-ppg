@@ -78,8 +78,10 @@
                     <input type="submit" id="update_{$item.slug|replace:'/':'___'}" value="[`Install update`]" >
              	{/if}
      		{else}
-                <input type="submit" id="update_{$item.slug|replace:'/':'___'}" value="[`Install update`]" disabled="true">
-                <br><br>
+                {*
+                    <input type="submit" id="update_{$item.slug|replace:'/':'___'}" value="[`Install update`]" disabled="true">
+                    <br><br>
+                *}
                 <span class="small">[`Update cannot be installed:`]</span>
                 {if !empty($item.payware) && empty($item.payware.purchased)}
                     <br>

@@ -127,7 +127,7 @@ msgstr "Установить обновление"
 
 #: /wa-apps/installer/templates/actions/update/Update.html:53
 msgid "Latest version"
-msgstr "Последняя версия."
+msgstr "Последняя версия"
 
 #: /wa-apps/installer/templates/actions/update/Update.html:60
 msgid "Updates are not available for this application."
@@ -335,7 +335,7 @@ msgstr "Все приложения"
 
 #: /wa-apps/installer/templates/actions/apps/AppsInfo.html:22
 msgid "Developer"
-msgstr "Разработка"
+msgstr "Разработчик"
 
 #: /wa-apps/installer/templates/actions/apps/AppsInfo.html:26
 msgid "Size"
@@ -431,8 +431,8 @@ msgstr "Режим отладки (debug mode)"
 #: /wa-apps/installer/templates/actions/settings/Settings.html:118
 msgid "Recommended while development"
 msgstr ""
-"Режим отладки отключает кеширование и включает полный подробный вывод "
-"сообщений об ошибках. Рекомендуется включить при разработке приложений."
+"Режим отладки отключает кеширование и включает подробный вывод сообщений об "
+"ошибках. Рекомендуется включить при разработке приложений."
 
 msgid "<"
 msgstr "менее"
@@ -773,3 +773,15 @@ msgstr "Установить обновление"
 #: /wa-apps/installer/templates/actions/update/Update.row.html:77
 msgid "Update cannot be installed:"
 msgstr "Обновление не может быть установлено:"
+
+#: /wa-apps/installer/templates/actions/apps/AppsInfo.html:24
+msgid "Updated"
+msgstr "Обновлено"
+
+#: /wa-apps/installer/templates/actions/apps/AppsInfo.html:27
+msgid "Status"
+msgstr "Статус"
+
+#: /wa-apps/installer/templates/actions/apps/AppsInfo.html:32
+msgid "Installed version"
+msgstr "Установленная версия"

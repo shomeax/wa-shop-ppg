@@ -5,4 +5,9 @@ class cashPayment extends waPayment implements waIPayment
     {
         return '';
     }
+
+    public function allowedCurrency()
+    {
+        return true;
+    }
 }

@@ -510,7 +510,14 @@ abstract class waPayment extends waSystemPlugin
         $transaction_model = new waTransactionModel();
         $transaction_data_model = new waTransactionDataModel();
         $data = $transaction_model->getById($wa_transaction_id);
-        $data['raw_data'] = $transaction_data_model->getByField('transaction_id', $wa_transaction_id, true);
+        if ($data) {
+            $data['raw_data'] = array();
+            $raw_data = $transaction_data_model->getByField('transaction_id', $wa_transaction_id, true);
+            foreach ($raw_data as $raw) {
+                $data['raw_data'][$raw['field_id']] = $raw['value'];
+            }
+        }
+
         return $data;
     }
 
@@ -660,6 +667,28 @@ abstract class waPayment extends waSystemPlugin
     }
 
     /**
+     * @return array[string]array
+     * @return array[string]['name']string название печатной формы
+     * @return array[string]['desription']string описание печатной формы
+     */
+    public function getPrintForms()
+    {
+        return array();
+    }
+
+    /**
+     *
+     * Displays printable form content (HTML) by id
+     * @param string $id
+     * @param waOrder $order
+     * @param array $params
+     */
+    public function displayPrintForm($id, waOrder $order, $params = array())
+    {
+        return '';
+    }
+
+    /**
      *
      * @return waAppPayment
      */
@@ -693,6 +722,8 @@ abstract class waPayment extends waSystemPlugin
 interface waIPayment
 {
     /**
+     * @param array $payment_form_data POST form data
+     * @param waOrder $order_data formalized order data
      * @return string HTML payment form
      */
     public function payment($payment_form_data, $order_data, $transaction_type);

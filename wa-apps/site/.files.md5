@@ -18,7 +18,7 @@ c3c66887d05d83ec593d376af374939c *img/site.png
 f2930a449fe54d2a744220b51f2b4865 *img/site16.png
 f5dd28ae7fd31a1af146f0fa52a066c4 *img/site24.png
 ad36b9e91b54c7f8140c1fa24a83bea2 *img/themes.png
-cbeffc136b8052a5e77aa238a6563289 *js/site-jquery.min.js
+d3d79160cf2c514cccd9231b2f549d4a *js/site-jquery.min.js
 d4f126261a2453722080b6d569af73bf *js/site.js
 a285da79a1cf95556e4eb1fd40059097 *lib/.htaccess
 ae17f7709f37f7d18c54419628111ed7 *lib/actions/backend/siteBackend.controller.php
@@ -33,7 +33,7 @@ a51566abcbff372cb5b7e75e110a13a6 *lib/actions/domains/siteDomainsSave.controller
 cb6f3a9befcd68ab52b2d129f4c021f9 *lib/actions/files/siteFiles.action.php
 e25b98c1d37556873aa4d4649c05ddae *lib/actions/files/siteFilesAddFolder.controller.php
 6fb7d6b3a6db5fc4eb44ff26950d34e2 *lib/actions/files/siteFilesDelete.controller.php
-729f408c03b9e36f50b57dfbceb96049 *lib/actions/files/siteFilesDownload.controller.php
+2b50009a4851216f20a9244e4df28200 *lib/actions/files/siteFilesDownload.controller.php
 ae9c9a943f724804f54ba2b3b58e2f42 *lib/actions/files/siteFilesList.controller.php
 104ba70da55f249116db70e4ac35c610 *lib/actions/files/siteFilesMove.controller.php
 f63ec685663fdeb915ec23f54c9dae97 *lib/actions/files/siteFilesRename.controller.php
@@ -62,7 +62,7 @@ a030863d75f0a154eb7c4de4587a0fb5 *lib/classes/siteRobots.class.php
 ca3cade2d7f172423645a7e17fc90dc9 *lib/classes/siteViewHelper.class.php
 3ee3a6dd8b47f6fd5ce38e7ff75fb102 *lib/config/app.php
 0bbca426251a45d7f323a9afd0ac24a5 *lib/config/app.sql
-c1a535bdc59ca0fb63471e7297b2734c *lib/config/build.php
+5c0458ef0a40a129bc2ed12bf160608a *lib/config/build.php
 df41769cace7fe770557a17e75a38d79 *lib/config/data/welcome.html
 d652f5d5bbef6e680c2cbc0a1402f966 *lib/config/db.php
 f726cef5c26cd5b27863bd196d841c67 *lib/config/install.php
@@ -109,10 +109,10 @@ baa6950deccc82519b1ecf8ad17729ee *templates/layouts/Sidebar.html
 ed8b405c3fde644f400b500a9d331e5e *themes/default/error.html
 f179b397db2c5929137b291a80695c96 *themes/default/forgotpassword.html
 2922a24289764fa80920367eb449d2bb *themes/default/img/app-selected.png
-48f117261145b5112e25f40434c97366 *themes/default/index.html
+f309dcc498514f627604c5a221c77f19 *themes/default/index.html
 a8708e6b1375762748842febfd56183c *themes/default/login.html
-53eca0ab83d9ff38c6506042f4d508f4 *themes/default/mobile.css
+f245d3834f21f3d193b18cc50cb8cc26 *themes/default/mobile.css
 8b0486ffe79172db88bbdab7bee687a7 *themes/default/page.html
-74f201e56130e9174a641f1bb035fbd8 *themes/default/sidebar.html
+da0aa64bab3538ab1194c582c5990fd5 *themes/default/sidebar.html
 d9ff2872e0887eeaf0dce594d1fdadf4 *themes/default/signup.html
 6548493f9f05c37e97e58591a0caf90d *themes/default/theme.xml

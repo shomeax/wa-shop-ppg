@@ -15,7 +15,7 @@ return array(
     'lifetime'       => array(
         'value'        => 24,
         'title'        => 'Время жизни счета',
-        'description'  => 'Укажите срок оплаты счета в часах',
+        'description'  => 'Укажите срок оплаты счета в часах.',
         'control_type' => 'input',
     ),
     'alarm'          => array(
@@ -27,13 +27,13 @@ return array(
     'prefix'         => array(
         'value'        => '',
         'title'        => 'Префикс счета',
-        'description'  => 'Используйте цифры и латинские буквы для ввода префикса номера счета в системе QIWI',
+        'description'  => 'Введите префикс номера счета в системе QIWI с использованием цифр и латинских букв.',
         'control_type' => 'input',
     ),
     'customer_phone' => array(
         'value'        => 'phone',
-        'title'        => 'Телефон покупателя',
-        'description'  => 'Выберите поле вашей формы регистрации, соответствующее телефонному номеру покупателя',
+        'title'        => 'Телефон клиента',
+        'description'  => 'Выберите поле вашей формы регистрации, предназначенное для ввода телефонного номера клиента.',
         'control_type' => 'contactfield',
     ),
     'TESTMODE'       => array(

@@ -233,9 +233,14 @@ HTML;
         return $this->wa->getConfig()->getHostUrl();
     }
 
-    public function currentUrl($absolute = false)
+    public function currentUrl($absolute = false, $without_params = false)
     {
         $url = $this->wa->getConfig()->getCurrentUrl();
+        if ($without_params) {
+            if (($i = strpos($url, '?')) !== false) {
+                return substr($url, 0, $i);
+            }
+        }
         if ($absolute) {
             return $this->domainUrl().$url;
         } else {
@@ -466,7 +471,7 @@ HTML;
         return $this->wa->getRouteUrl((isset($auth['app']) ? $auth['app'] : '').'/forgotpassword');
     }
 
-    public function loginForm($error = '')
+    public function loginForm($error = '', $form = true)
     {
         $auth = $this->wa->getAuth();
         $field_id = $auth->getOption('login');
@@ -480,8 +485,8 @@ HTML;
                 $field_name = ucfirst($field_id);
             }
         }
-        return '<div class="wa-form">
-            <form action="" method="post">
+        return '<div class="wa-form">'.
+            ($form ? '<form action="'.$this->loginUrl().'" method="post">' : '').'
                 <div class="wa-field">
                     <div class="wa-name">'.$field_name.'</div>
                     <div class="wa-value">
@@ -500,8 +505,8 @@ HTML;
                         <input type="hidden" name="wa_auth_login" value="1">
                         <input type="submit" value="'._ws('Sign In').'"> <a href="'.$this->getUrl('/forgotpassword').'">'._ws('Forgot password?').'</a>
                     </div>
-                </div>
-            </form>
+                </div>'.
+            ($form ? '</form>' : '').'
         </div>';
     }
 
@@ -512,7 +517,7 @@ HTML;
         <div class="wa-field">
             <div class="wa-name">'._ws('Email').'</div>
             <div class="wa-value">
-                <input'.($error ? ' class="wa-error"' : '').' type="text" name="login" value="'.htmlspecialchars($this->request('login')).'" autocomplete="off">
+                <input'.($error ? ' class="wa-error"' : '').' type="text" name="login" value="'.htmlspecialchars(waRequest::request('login', '', waRequest::TYPE_STRING)).'" autocomplete="off">
                 '.($error ? '<em class="wa-error-msg">'.$error.'</em>' : '').'
             </div>
         </div>
@@ -604,7 +609,7 @@ HTML;
     public function signupForm($errors = array())
     {
         $fields = $this->signupFields($errors);
-        $html = '<div class="wa-form"><form action="" method="post">';
+        $html = '<div class="wa-form"><form action="'.$this->signupUrl().'" method="post">';
         foreach ($fields as $field_id => $field) {
             if ($field) {
                 $f = $field[0];

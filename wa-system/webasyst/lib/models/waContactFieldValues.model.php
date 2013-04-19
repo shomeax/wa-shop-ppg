@@ -53,8 +53,9 @@ class waContactFieldValuesModel extends waModel
             }
         }
         if (!empty($data['add'])) {
-            $this->multipleInsert($data['add']);
+            return $this->multipleInsert($data['add']);
         }
+        return true;
     }
 
     public function changeField($old_field, $new_field)

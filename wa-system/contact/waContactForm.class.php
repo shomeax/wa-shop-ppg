@@ -5,7 +5,7 @@
  */
 class waContactForm
 {
-    /** @var array field_id => waContactField */
+    /** @var waContactField[] field_id => waContactField */
     public $fields;
 
     /** @var array */
@@ -256,7 +256,7 @@ class waContactForm
     /**
      * Get specified form field or all of them.
      * @param string $field_id
-     * @return array|waContactField
+     * @return waContactField|waContactField[]
      */
     public function fields($field_id = null)
     {
@@ -297,16 +297,11 @@ class waContactForm
             }
 
             // HTML with no errors?
-            if (!$with_errors || empty($this->errors[$field_id])) {
-                return $this->fields[$field_id]->getHTML($opts);
+            if ($with_errors && !empty($this->errors[$field_id]) && !empty($this->errors[$field_id])) {
+                $opts['validation_errors'] = $this->errors[$field_id];
             }
 
-            // HTML with errors
-            $result = $this->fields[$field_id]->getHTML($opts, 'class="error"');
-            foreach($this->errors[$field_id] as $error_msg) {
-                $result .= "\n".'<em class="errormsg">'.htmlspecialchars($error_msg).'</em>';
-            }
-            return $result;
+            return $this->fields[$field_id]->getHTML($opts);
         }
 
         // Whole form
@@ -321,7 +316,8 @@ class waContactForm
                 continue;
             }
 
-            $result .= '<div class="'.$class_field.'"><div class="'.$class_name.'">'.$f->getName().'</div><div class="'.$class_value.'">';
+            $result .= '<div class="'.$class_field.($f->isRequired() ? ' '.(wa()->getEnv() == 'frontend' ? 'wa-required' : 'required') : '').'"><div class="'.$class_name.'">'.
+                $f->getName().'</div><div class="'.$class_value.'">';
             $result .= "\n".$this->html($fid, $with_errors);
             $result .= "\n</div></div>";
         }

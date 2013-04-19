@@ -700,3 +700,15 @@ msgstr ""
 #: /wa-apps/installer/templates/actions/update/Update.row.html:77
 msgid "Update cannot be installed:"
 msgstr ""
+
+#: /wa-apps/installer/templates/actions/apps/AppsInfo.html:24
+msgid "Updated"
+msgstr ""
+
+#: /wa-apps/installer/templates/actions/apps/AppsInfo.html:27
+msgid "Status"
+msgstr ""
+
+#: /wa-apps/installer/templates/actions/apps/AppsInfo.html:32
+msgid "Installed version"
+msgstr ""

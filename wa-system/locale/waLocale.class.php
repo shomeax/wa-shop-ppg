@@ -136,7 +136,7 @@ class waLocale
             if (strpbrk($locale, '/\:')) {
                 return null;
             }
-            $path = dirname(__FILE__)."/data/".$locale.".php";
+            $path = wa()->getConfig()->getPath('system')."/locale/data/".$locale.".php";
             if (file_exists($path)) {
                 self::$locale_info[$locale] = include($path);
             } else {
@@ -156,9 +156,9 @@ class waLocale
         if ($decimals === false) {
             $decimals = 0;
             if (($i = strpos($n, '.')) !== false) {
-                $decimals = strlen($n) - $i - 1;
+                $decimals = strlen(rtrim($n, '0')) - $i - 1;
             } elseif (($i = strpos($n, ',')) !== false) {
-                $decimals = strlen($n) - $i - 1;
+                $decimals = strlen(rtrim($n, '0')) - $i - 1;
             }
         } elseif ($decimals === null) {
             $decimals = $locale_info['frac_digits'];

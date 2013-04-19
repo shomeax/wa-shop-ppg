@@ -5,6 +5,20 @@ class waRegionModel extends waModel
     protected $id = array('country_iso3', 'code');
     protected $table = 'wa_region';
 
+    public function get($country, $code)
+    {
+        // Profiling shows that it is reasonable to have such cache here:
+        // it saves several queries on page with contact form or use of field formatters.
+        static $cache = array();
+        if (empty($cache[$country][$code])) {
+            $cache[$country][$code] = $this->getByField(array(
+                'country_iso3' => $country,
+                'code' => $code,
+            ));
+        }
+        return $cache[$country][$code];
+    }
+
     public function getCountries()
     {
         $result = $this->query("SELECT DISTINCT country_iso3 FROM {$this->table}")->fetchAll('country_iso3');
@@ -17,7 +31,7 @@ class waRegionModel extends waModel
             return array();
         }
         $sql = "SELECT * FROM {$this->table} WHERE country_iso3 IN (:country) ORDER BY name";
-        return $this->query($sql, array('country' => $country))->fetchAll('code');
+        return $this->query($sql, array('country' => $country))->fetchAll(is_array($country) ? null : 'code');
     }
 
     public function getByCountryWithFav($country_or_regions)

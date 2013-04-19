@@ -169,6 +169,11 @@ class waResponse {
       {
           if ($app_id) {
               $url = wa()->getAppStaticUrl($app_id).$url;
+              $app_info = wa()->getAppInfo($app_id === true ? null : $app_id);
+              $url .= '?'.(isset($app_info['version']) ? $app_info['version'] : '0.0.1');
+              if (waSystemConfig::isDebug()) {
+                  $url .= '.'.time();
+              }
           } else {
               $url = wa()->getRootUrl().$url;
           }
@@ -193,6 +198,11 @@ class waResponse {
       {
           if ($app_id) {
               $url = wa()->getAppStaticUrl($app_id).$url;
+              $app_info = wa()->getAppInfo($app_id === true ? null : $app_id);
+              $url .= '?'.(isset($app_info['version']) ? $app_info['version'] : '0.0.1');
+              if (waSystemConfig::isDebug()) {
+                  $url .= '.'.time();
+              }
           } else {
               $url = wa()->getRootUrl().$url;
           }

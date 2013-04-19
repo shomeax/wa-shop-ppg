@@ -37,19 +37,16 @@ class waContactRegionField extends waContactField
     public function format($data, $format = null, $full_composite=null)
     {
         if (empty($full_composite['country'])) {
-            return $data;
+            return $format === 'value' ? htmlspecialchars($data) : $data;
         }
         if (!$this->rm) {
             $this->rm = new waRegionModel();
         }
-        $row = $this->rm->getByField(array(
-            'country_iso3' => $full_composite['country'],
-            'code' => $data,
-        ));
+        $row = $this->rm->get($full_composite['country'], $data);
         if (!$row) {
-            return $data;
+            return $format === 'value' ? htmlspecialchars($data) : $data;
         }
-        return $row['name'];
+        return $format === 'value' ? htmlspecialchars($row['name']) : $row['name'];
     }
 
     public function getHtmlOne($params = array(), $attrs = '')
@@ -87,7 +84,9 @@ class waContactRegionField extends waContactField
         if ($country) {
             // List of regions for this country
             $rm = new waRegionModel();
-            $options = array();
+            $options = array(
+                '<option value="">'.htmlspecialchars('<'._ws('select region').'>').'</option>',
+            );
             $selected = false;
             foreach($rm->getByCountryWithFav($country) as $row) {
                 if (strlen($row['name']) <= 0) {
@@ -103,7 +102,7 @@ class waContactRegionField extends waContactField
                 }
             }
 
-            if ($options) {
+            if (count($options) > 1) {
                 // Selected country has regions. Show as <select>.
                 $region_select = '<select name="'.htmlspecialchars($name_input).'" '.$attrs.">\n\t".implode("\n\t", $options)."\n</select>";
             }
@@ -132,6 +131,7 @@ class waContactRegionField extends waContactField
             $xhr_url = ifset($params['xhr_url'], wa()->getRouteUrl('/frontend/regions'));
         }
         $region_countries = json_encode($region_countries);
+        $empty_option = '<'._ws('select region').'>';
         $js = <<<EOJS
 <script>if($){ $(function() {
     var region_countries = {$region_countries};
@@ -163,8 +163,17 @@ class waContactRegionField extends waContactField
         select.hide();
     };
 
+    var getVal = function() {
+        if (input.is(':visible')) {
+            return input.val();
+        } else {
+            return select.val();
+        }
+    };
+
     var change_handler;
     country_select.change(change_handler = function() {
+        var old_val = getVal();
         var country = $(this).val();
         input.prev('.loading').remove();
         if (region_countries && region_countries[country]) {
@@ -175,14 +184,29 @@ class waContactRegionField extends waContactField
                 if (r.data && r.data.options && r.data.oOrder) {
                     input.hide();
                     select.show().children().remove();
+                    select.append($('<option value=""></option>').text("{$empty_option}"));
+                    var o, selected = false;
                     for (i = 0; i < r.data.oOrder.length; i++) {
-                        select.append($('<option></option>').attr('value', r.data.oOrder[i]).text(r.data.options[r.data.oOrder[i]]).attr('disabled', r.data.oOrder[i] === ''));
+                        o = $('<option></option>').attr('value', r.data.oOrder[i]).text(r.data.options[r.data.oOrder[i]]).attr('disabled', r.data.oOrder[i] === '');
+                        if (!selected && old_val === r.data.oOrder[i]) {
+                            o.attr('selected', true);
+                            selected = true;
+                        }
+                        select.append(o);
                     }
+                    if (input[0].hasAttribute('name')) {
+                        select.attr('name', input.attr('name'));
+                        input[0].removeAttribute('name');
+                    }
+                } else {
+                    showInput();
+                    input.val(old_val);
                 }
             }, 'json');
         } else {
             if (!input.is(':visible')) {
                 showInput();
+                input.val(old_val);
             }
         }
     });

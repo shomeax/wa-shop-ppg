@@ -31,7 +31,7 @@ class qiwiPayment extends waPayment implements waIPayment, waIPaymentCapture, wa
     public function payment($payment_form_data, $order_data, $transaction_type)
     {
         if (empty($order_data['currency_id']) || ($order_data['currency_id'] != 'RUB')) {
-            throw new waPaymentException('Оплата в через платежную систему «КИВИ» производится в только в рублях (RUB) и в данный момент невозможна, так как в настройках интернет-магазина валюта рубли (RUB) не определена.');
+            throw new waPaymentException('Оплата в через платежную систему «QIWI» производится в только в рублях (RUB) и в данный момент невозможна, так как эта валюта не определена в настройках.');
         }
 
         if (empty($order_data['order_id'])) {
@@ -229,13 +229,7 @@ class qiwiPayment extends waPayment implements waIPayment, waIPaymentCapture, wa
     protected function formalizeData($result)
     {
         if ($this->prefix) {
-            $metacharacters = array('?', '+', '*', '.', '(', ')', '[', ']', '{', '}', '<', '>', '^', '$', '@');
-            foreach ($metacharacters as & $char) {
-                $char = "\\{$char}";
-                unset($char);
-            }
-            $cleanup_pattern = '@('.implode('|', $metacharacters).')@';
-            $pattern = preg_replace($cleanup_pattern, '\\\\$1', $this->prefix);
+            $pattern = wa_make_pattern($this->prefix, '@');
             $pattern = "@^{$pattern}(.+)$@";
             $order_id = null;
             if (preg_match($pattern, $this->order_id, $matches)) {
@@ -433,9 +427,9 @@ class qiwiPayment extends waPayment implements waIPayment, waIPaymentCapture, wa
         $codes[210] = 'Счет не найден';
         $codes[215] = 'Счет с таким txn-id уже существует';
         $codes[241] = 'Сумма слишком мала';
-        $codes[242] = 'Превышена максимальная сумма платежа – 15 000р.';
-        $codes[278] = 'Превышение максимального интервала получения списка счетов';
-        $codes[298] = 'Агента не существует в системе';
+        $codes[242] = 'Превышена максимальная сумма платежа 15 000 руб.';
+        $codes[278] = 'Превышен максимальный интервал получения списка счетов';
+        $codes[298] = 'Агент не существует в системе';
         $codes[300] = 'Неизвестная ошибка';
         $codes[330] = 'Ошибка шифрования';
         $codes[370] = 'Превышено максимальное кол-во одновременно выполняемых запросов';
@@ -458,7 +452,7 @@ class qiwiPayment extends waPayment implements waIPayment, waIPaymentCapture, wa
         $codes[52] = 'Проводится';
         $codes[60] = 'Оплачен';
         $codes[150] = 'Отменен (ошибка на терминале)';
-        $codes[151] = 'Отменен (ошибка авторизации: недостаточно средств на балансе, отклонен абонентом при оплате с лицевого счета оператора сотовой связи и т.п.).';
+        $codes[151] = 'Отменен (ошибка авторизации: недостаточно средств на балансе, отклонен абонентом при оплате с лицевого счета оператора сотовой связи и т. п.).';
         $codes[160] = 'Отменен';
         $codes[161] = 'Отменен (Истекло время)';
         return isset($codes[$response_code]) ? $codes[$response_code] : $codes[-1];

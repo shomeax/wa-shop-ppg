@@ -1054,6 +1054,7 @@ class waInstallerApps
                 CURLOPT_TIMEOUT => 10,
                 CURLOPT_CONNECTTIMEOUT => 10,
                 CURLE_OPERATION_TIMEOUTED => 10,
+                CURLOPT_DNS_CACHE_TIMEOUT => 3600,
             );
 
             if ((version_compare(PHP_VERSION, '5.4', '>=') || !ini_get('safe_mode')) && !ini_get('open_basedir')) {

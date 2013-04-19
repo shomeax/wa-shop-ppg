@@ -2,7 +2,6 @@
 /**
  *
  * @author WebAsyst Team
- * @version SVN: $Id: class.htmlcontrol.php 1552 2010-10-19 16:36:58Z vlad $
  *
  */
 class waHtmlControl
@@ -323,7 +322,7 @@ class waHtmlControl
     {
         $title = '';
         if (isset($params['title']) && !empty($params['title_wrapper'])) {
-            $option_title = htmlentities(self::_wp($params['title']), ENT_QUOTES, self::$default_charset);
+            $option_title = htmlentities(self::_wp($params['title'], $params), ENT_QUOTES, self::$default_charset);
             if (!empty($params['id'])) {
                 $params['id'] = htmlentities($params['id'], ENT_QUOTES, self::$default_charset);
                 $option_title = "<label for=\"{$params['id']}\">{$option_title}</label>\n";
@@ -339,7 +338,7 @@ class waHtmlControl
     {
         $description = '';
         if (!empty($params['description_wrapper']) && !empty($params['description'])) {
-            $description = sprintf($params['description_wrapper'], self::_wp($params['description']));
+            $description = sprintf($params['description_wrapper'], self::_wp($params['description'], $params));
         }
         return $description;
     }
@@ -420,7 +419,7 @@ class waHtmlControl
             $control .= "<input type=\"radio\" name=\"{$name}\" value=\"{$option_value}\"";
             $control .= self::addCustomParams(array('class', 'style', 'id', 'checked', 'readonly', ), $params);
             if (!empty($option['title'])) {
-                $option_title = htmlentities(self::_wp($option['title']), ENT_QUOTES, self::$default_charset);
+                $option_title = htmlentities(self::_wp($option['title'], $params), ENT_QUOTES, self::$default_charset);
                 $control .= ">&nbsp;<label";
                 $control .= self::addCustomParams(array('id' => 'for', ), $params);
                 $control .= self::addCustomParams(array('description' => 'title', 'class', 'style', ), $option);
@@ -447,13 +446,13 @@ class waHtmlControl
         $control .= ">\n";
         $groupbox = null;
         foreach ($options as $option) {
-            if ($groupbox && (empty($option['group']) || ($option['group'] != $groupbox))) {
+            if ($groupbox && (empty($option['group']) || (strcasecmp($option['group'], $groupbox) != 0))) {
                 $groupbox = false;
                 $control .= "\n</optgroup>\n";
             }
             if (!empty($option['group']) && ($option['group'] != $groupbox)) {
-                $groupbox = htmlentities((string) $option['group'], ENT_QUOTES, self::$default_charset);
-                $control .= "\n<optgroup label=\"{$groupbox}\"".self::addCustomParams(array('class', 'style'), $option).">\n";
+                $groupbox = (string) $option['group'];
+                $control .= "\n<optgroup label=\"".htmlentities($groupbox, ENT_QUOTES, self::$default_charset)."\"".self::addCustomParams(array('class', 'style'), $option).">\n";
             }
 
             ++$id;
@@ -470,7 +469,7 @@ class waHtmlControl
             $control .= "<option value=\"{$option_value}\"";
             $control .= self::addCustomParams(array('selected'), $params);
             $control .= self::addCustomParams(array('class', 'style', 'description' => 'title', ), $option);
-            $option_title = htmlentities(self::_wp($option['title']), ENT_QUOTES, self::$default_charset);
+            $option_title = htmlentities(self::_wp(ifset($option['title'], $option_value), $params), ENT_QUOTES, self::$default_charset);
             $control .= ">{$option_title}</option>\n";
         }
         if ($groupbox) {
@@ -484,24 +483,34 @@ class waHtmlControl
     {
         $control = '';
         $options = isset($params['options']) ? (is_array($params['options']) ? $params['options'] : array($params['options'])) : array();
-        $checked = isset($params['checked']) ? (is_array($params['checked']) ? $params['checked'] : array($params['checked'])) : array();
         if (!is_array($params['value'])) {
             $params['value'] = array();
         }
         self::addNamespace($params, $name);
+
+        $wrappers = array(
+            'title_wrapper'       => '&nbsp;%s',
+            'description_wrapper' => '<span class="hint">%s</span>',
+            'control_wrapper'     => '%2$s'."\n".'%1$s'."\n".'%3$s'."\n",
+            'control_separator'   => "<br>",
+
+        );
+        $params = array_merge($params, ifempty($params['options_wrapper'], $wrappers));
         $checkbox_params = $params;
         if (isset($params['options'])) {
             unset($checkbox_params['options']);
         }
-        $values = $params['value'];
+        $id = 0;
         foreach ($options as $option) {
             //TODO check that $option is array
-            $checkbox_params['value'] = isset($values[$option['value']]) ? $values[$option['value']] : null;
-            $checkbox_params['title'] = $option['title'];
-            if ($checked) {
-                $checkbox_params['checked'] = isset($checked[$option['value']]) ? $checked[$option['value']] : null;
-            }
+            $checkbox_params['value'] = 1;
+            $checkbox_params['checked'] = in_array($option['value'], $params['value']);
+            $checkbox_params['title'] = ifset($option['title']);
+            $checkbox_params['description'] = ifempty($option['description']);
             $control .= self::getControl(self::CHECKBOX, $option['value'], $checkbox_params);
+            if (++$id < count($options)) {
+                $control .= $params['control_separator'];
+            }
         }
         return $control;
     }
@@ -547,7 +556,7 @@ class waHtmlControl
         } elseif (isset($params['checked'])) {
             unset($params['checked']);
         }
-        if (!isset($params['value'])) {
+        if (empty($params['value'])) {
             $params['value'] = 1;
         }
         if (isset($params['label']) && $params['label']) {
@@ -559,7 +568,7 @@ class waHtmlControl
         $control .= self::addCustomParams(array('value', 'class', 'style', 'checked', 'id', 'title', 'readonly', ), $params);
         $control .= ">";
         if (isset($params['label']) && $params['label']) {
-            $control .= '&nbsp;'.htmlentities(self::_wp($params['label']), ENT_QUOTES, self::$default_charset)."</label>";
+            $control .= '&nbsp;'.htmlentities(self::_wp($params['label'], $params), ENT_QUOTES, self::$default_charset)."</label>";
         }
 
         return $control;
@@ -694,25 +703,25 @@ class waHtmlControl
 
     /**
      *
-     * @param array $params_list
-     * @param array $params_values
+     * @param array $list
+     * @param array $params
      * @return string
      */
-    private function addCustomParams($params_list, $params_values = array())
+    private function addCustomParams($list, $params = array())
     {
         $params_string = '';
-        foreach ($params_list as $param => $target) {
+        foreach ($list as $param => $target) {
             if (is_int($param)) {
                 $param = $target;
             }
-            if (isset($params_values[$param])) {
-                $param_value = $params_values[$param];
+            if (isset($params[$param])) {
+                $param_value = $params[$param];
                 if (is_array($param_value)) {
                     $param_value = implode(' ', $param_value);
                 }
                 if ($param_value !== false) {
                     if (in_array($param, array('title', 'description'))) {
-                        $param_value = self::_wp($param_value);
+                        $param_value = self::_wp($param_value, $params);
                     } elseif (in_array($param, array('disabled', 'readonly'))) {
                         $param_value = $param;
                     }
@@ -728,13 +737,17 @@ class waHtmlControl
         return $params_string;
     }
 
-    private static function _wp($param)
+    private static function _wp($param, $params = array())
     {
         if (is_array($param)) {
-            $param[key($param)] = _wp(current($param));
+            if (!isset($params['translate']) || !empty($params['translate'])) {
+                $param[key($param)] = _wp(current($param));
+            }
             $string = call_user_func_array('sprintf', $param);
-        } else {
+        } elseif (!isset($params['translate']) || !empty($params['translate'])) {
             $string = _wp($param);
+        } else {
+            $string = $param;
         }
         return $string;
     }

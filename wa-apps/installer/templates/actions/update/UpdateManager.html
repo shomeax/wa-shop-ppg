@@ -10,8 +10,9 @@ $(document).ready( function() {
     $( function() {
         console.production = {if waSystemConfig::isDebug()}false{else}true{/if};
         $.installer.init({
-            updateStateInterval: 500,
+            updateStateInterval: 1000,
             updateStateErrorInterval: 2000,
+            timestamp:{time()},
             queue:[
             {foreach from=$queue_apps item=app name=queue}{
                 'subject':'{$app.subject|default:"app"}',

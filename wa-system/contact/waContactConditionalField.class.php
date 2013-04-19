@@ -20,8 +20,9 @@ class waContactConditionalField extends waContactField
     public function getInfo()
     {
         $info = parent::getInfo();
-        $info['parent_options'] = reset($this->getOptions());
-        $info['parent_field'] = key($this->getOptions());
+        $tmp = $this->getOptions();
+        $info['parent_options'] = reset($tmp);
+        $info['parent_field'] = key($tmp);
         return $info;
     }
 
@@ -126,9 +127,11 @@ class waContactConditionalField extends waContactField
             $p['id'] = array_pop($p['id']);
             $name_parent = $this->getHTMLName($p);
             $values = json_encode($possible_options[$parent_field]);
+            $option_hide_unmatched = $this->getParameter('hide_unmatched') ? 'true' : 'false';
             $js = <<<EOJS
 <script>if($){ $(function() {
-    var parent_field = $('[name="{$name_parent}"]');
+    var parent_field_selector = '[name="{$name_parent}"]';
+    var parent_field = $(parent_field_selector);
     if (parent_field.length <= 0) {
         return;
     }
@@ -163,10 +166,13 @@ class waContactConditionalField extends waContactField
         }
     };
 
-    var handler;
-    parent_field.change(handler = function() {
+    // Parent field on-change handler
+    var handler = function() {
         var old_val = getVal();
         var parent_value = $(this).val().toLowerCase();
+        if ({$option_hide_unmatched}) {
+            input.closest('.field').show();
+        }
         if (values && values[parent_value]) {
             var options = values[parent_value];
             input.hide();
@@ -179,14 +185,25 @@ class waContactConditionalField extends waContactField
                 select.attr('name', input.attr('name'));
                 input[0].removeAttribute('name');
             }
+        } else if ({$option_hide_unmatched}) {
+            showInput();
+            input.val('');
+            input.closest('.field').hide();
         } else {
             if (!input.is(':visible')) {
                 showInput();
                 input.val(old_val);
             }
         }
-    });
+    };
     handler.call(parent_field);
+
+    var wrapper = parent_field.closest('.field');
+    if (wrapper.length) {
+        wrapper.on('change', parent_field_selector, handler);
+    } else {
+        parent_field.change(handler);
+    }
 });};</script>
 EOJS;
         }

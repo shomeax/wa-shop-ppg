@@ -141,6 +141,12 @@ class waRouting
                 } else {
                     $domain = 'www.'.$this->domain;
                 }
+                if (wa()->getEnv() == 'frontend' && isset($this->routes[$domain])) {
+                    $https = isset($_SERVER['HTTPS']) ? $_SERVER['HTTPS'] : '';
+                    $url = 'http'.(strtolower($https) == 'on' ? 's' : '').'://';
+                    $url .= $this->getDomainUrl($domain).'/'.wa()->getConfig()->getRequestUrl();
+                    wa()->getResponse()->redirect($url);
+                }
                 return $domain;
             }
         }
@@ -181,7 +187,7 @@ class waRouting
             }
             $this->root_url = self::clearUrl($u);
             $url = substr($url, strlen($this->root_url));
-            $this->dispatchRoutes($this->getAppRoutes($r['app'], $r), $url);
+            $this->dispatchRoutes($this->getAppRoutes($r['app'], $r, true), $url);
         }
 
         // Default routing via GET parameters
@@ -231,7 +237,7 @@ class waRouting
             $model = new $class();
             $query = $model->select('id, full_url');
 
-            $query->where("domain = ? AND route = ?", array(self::getDomain(), $route['url']));
+            $query->where("domain = ? AND route = ?", array(self::getDomain(null, true), $route['url']));
 
             if (!waRequest::get('preview')) {
                 $query->where("status = 1");
@@ -252,11 +258,11 @@ class waRouting
     }
 
 
-    protected function getAppRoutes($app, $route = array())
+    protected function getAppRoutes($app, $route = array(), $dispatch = false)
     {
-        $routes = wa($app)->getConfig()->getRouting($route);
+        $routes = wa($app)->getConfig()->getRouting($route, $dispatch);
         $routes = $this->formatRoutes($routes, true);
-        if (wa($app)->getConfig()->getInfo('pages') && $app != 'site') {
+        if ($dispatch && wa($app)->getConfig()->getInfo('pages') && $app != 'site') {
             $page_routes = $this->getPageRoutes($app, $route);
             if ($page_routes) {
                 $routes = array_merge($page_routes, $routes);

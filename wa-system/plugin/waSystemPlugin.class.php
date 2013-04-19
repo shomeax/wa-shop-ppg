@@ -293,10 +293,16 @@ abstract class waSystemPlugin
 </div>
 ',
         );
+        $options = ifempty($params['options'], array());
+        unset($params['options']);
         $params = array_merge($default, $params);
+
         foreach ($this->config() as $name => $row) {
             $row = array_merge($row, $params);
             $row['value'] = $this->getSettings($name);
+            if (isset($options[$name])) {
+                $row['options'] = $options[$name];
+            }
             if (isset($params['value']) && isset($params['value'][$name])) {
                 $row['value'] = $params['value'][$name];
             }
@@ -332,17 +338,14 @@ abstract class waSystemPlugin
         $settings_config = $this->config();
         $data = array();
         foreach ($settings_config as $name => $row) {
-            // remove
+            // default
             if (!isset($settings[$name])) {
-                $this->settings[$name] = isset($row['value']) ? $row['value'] : null;
-                //$this->getAdapter()->del($this->key, $name);
-                //TODO
-                }
+                $settings[$name] = isset($row['value']) ? $row['value'] : null;
+            }
         }
         foreach ($settings as $name => $value) {
             $this->settings[$name] = $value;
-            // save to db
-            $this->getAdapter()->setSettings($this->key, $name, $value);
+            $this->getAdapter()->setSettings($this->id, $this->key, $name, $value);
         }
         return $data;
     }

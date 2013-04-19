@@ -47,14 +47,27 @@ class waCountryModel extends waModel
 
     public function get($id, $locale=null)
     {
+        static $cache = array();
         $locale = $this->ensureLocale($locale);
         if (self::$cacheLocale == $locale) {
             return isset(self::$cache[$id]) ? self::$cache[$id] : null;
         }
 
+        // Profiling shows that it is reasonable to have such cache here:
+        // it saves several queries per page, when there's a contact form
+        // or use of field formatters on that page.
+        static $cache = array();
+        if ($locale === $this->ensureLocale(null) && !empty($cache[$id])) {
+            return $cache[$id];
+        }
+
         $sql = "SELECT * FROM wa_country WHERE iso3letter=:id";
         $r = $this->translate($locale, $this->query($sql, array('id' => $id)));
+
         if ($r && !empty($r[$id])) {
+            if ($locale === $this->ensureLocale(null)) {
+                $cache[$id] = $r[$id];
+            }
             return $r[$id];
         }
         return null;

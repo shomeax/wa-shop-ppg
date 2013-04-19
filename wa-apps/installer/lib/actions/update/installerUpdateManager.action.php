@@ -73,9 +73,8 @@ class installerUpdateManagerAction extends waViewAction
                         if (installerHelper::equals($app_ids[$app_id], $info)) {
                             $queue_apps[] = $info;
                         }
-                    } else {
-                        //TODO: add warning message
-                        }
+                    }
+
                     if (!empty($info['extras'])) {
                         foreach ($info['extras'] as $type => & $extras) {
                             foreach ($extras as $extra_id => & $extras_info) {
@@ -83,9 +82,7 @@ class installerUpdateManagerAction extends waViewAction
                                 $extras_info['name'] .= " ({$info['name']})";
                                 if (isset($app_ids[$extras_id]) && installerHelper::equals($app_ids[$extras_id], $extras_info)) {
                                     $queue_apps[] = $extras_info;
-                                } else {
-                                    //TODO: add warning message
-                                    }
+                                }
                             }
                             unset($extras_info);
                         }

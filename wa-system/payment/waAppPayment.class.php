@@ -18,6 +18,7 @@ abstract class waAppPayment
     const URL_DECLINE = 'decline';
     const URL_FAIL = 'fail';
     const URL_CHECKOUT = 'checkout';
+    const URL_PRINTFORM = 'printform';
     /**
      *
      *
@@ -64,7 +65,7 @@ abstract class waAppPayment
      * @param $settings array key-value
      * @return array
      */
-    abstract public function setSettings($plugin_id, $key, $settings);
+    abstract public function setSettings($plugin_id, $key, $name, $value);
 
     /**
      *
@@ -84,22 +85,25 @@ abstract class waAppPayment
 
     /**
      *
-     * @return array['order_id']string
-     * @return array['customer_id']string
-     * @return array['amount']float
-     * @return array['currency']string
-     *
-     * @return array['items']array
-     * @return array['items'][]['id']string
-     * @return array['items'][]['name']string
-     * @return array['items'][]['description']string
-     * @return array['items'][]['price']float
-     * @return array['items'][]['quantity']int
-     * @return array['items'][]['total']float
-     *
-     * @return array['discount']['price']string
+     * @param string|array $order
+     * @param waPayment
+     * @return waOrder
      */
-    abstract public function getOrderData();
+    public static function getOrderData($order, $payment_plugin = null)
+    {
+        return waOrder::factory($order);
+    }
+
+    /**
+     *
+     * Set current order params
+     * @param string $order_id
+     * @param array $params key=>value array
+     */
+    public function setOrderParams($order_id, $params)
+    {
+
+    }
 
     /**
      *

@@ -10,36 +10,33 @@
  * @copyright 2011 Webasyst LLC
  * @package wa-installer
  */
-header ('Cache-Control: no-cache, must-revalidate');
+header('Cache-Control: no-cache, must-revalidate');
 header('Content-Type: text/html; charset=UTF-8;');
-header ('Pragma: no-cache');
+header('Pragma: no-cache');
 header('Connection: close');
 
-
-@ini_set("magic_quotes_runtime",0);
-if(version_compare('5.4', PHP_VERSION, '>') && function_exists('set_magic_quotes_runtime') && get_magic_quotes_runtime()){
+@ini_set("magic_quotes_runtime", 0);
+if (version_compare('5.4', PHP_VERSION, '>') && function_exists('set_magic_quotes_runtime') && get_magic_quotes_runtime()) {
     @set_magic_quotes_runtime(false);
 }
 
-
 $init_path = dirname(__FILE__).'/lib/init.php';
-if (!isset($_SERVER['REQUEST_URI']))
-{
-    $_SERVER['REQUEST_URI'] = substr($_SERVER['PHP_SELF'],1 );
-    if (isset($_SERVER['QUERY_STRING'])&&strlen($_SERVER['QUERY_STRING'])){
-        $_SERVER['REQUEST_URI'].='?'.$_SERVER['QUERY_STRING'];
+if (!isset($_SERVER['REQUEST_URI'])) {
+    $_SERVER['REQUEST_URI'] = substr($_SERVER['PHP_SELF'], 1);
+    if (isset($_SERVER['QUERY_STRING']) && strlen($_SERVER['QUERY_STRING'])) {
+        $_SERVER['REQUEST_URI'] .= '?'.$_SERVER['QUERY_STRING'];
     }
 }
 
-$lang = isset($_POST['lang'])?$_POST['lang']:(isset($_GET['lang'])?$_GET['lang']:'ru_RU');
-if(!file_exists($init_path)){
+$lang = isset($_POST['lang']) ? $_POST['lang'] : (isset($_GET['lang']) ? $_GET['lang'] : 'ru_RU');
+if (!file_exists($init_path)) {
     throw new Exception("File <b>wa-installer/lib/init.php</b> not found");
 }
 require_once($init_path);
 
 $t = new waInstallerLocale($lang);
 
-$path = preg_replace('@(^|/)[^/]+$@','',$_SERVER['REQUEST_URI']);
+$path = preg_replace('@(^|/)[^/]+$@', '', $_SERVER['REQUEST_URI']);
 
 if (!empty($_SERVER['SCRIPT_NAME'])) {
     $path = $_SERVER['SCRIPT_NAME'];
@@ -50,23 +47,22 @@ if (!empty($_SERVER['SCRIPT_NAME'])) {
 }
 $path = preg_replace('!/[^/]*$!', '/', $path);
 
-$host = preg_replace('@:80(/|/?$)@','',$_SERVER['HTTP_HOST']).($path?"/{$path}/":'/');
-$host = preg_replace('@(([^:]|^)/)/{1,}@','$1',$host);
+$host = preg_replace('@:80(/|/?$)@', '', $_SERVER['HTTP_HOST']).($path ? "/{$path}/" : '/');
+$host = preg_replace('@(([^:]|^)/)/{1,}@', '$1', $host);
 
 setcookie('auth_token', null, -1, $path);
 
-
-function parseLog($stages,&$t)
+function parseLog($stages, &$t)
 {
     $log = '';
-    foreach($stages as $app=>$info){
-        $info['datetime'] = date('D, H:i:s O',intval($info['stage_start_time']));
+    foreach ($stages as $app => $info) {
+        $info['datetime'] = date('D, H:i:s O', intval($info['stage_start_time']));
         $log .= "<p><span>{$info['datetime']}</span> <span class=\"i-app-name\">{$t->_($info['chunk_id'])}</span> {$t->_($info['stage_name'])}&nbsp;";
-        if($info['stage_status'] =='heartbeat'){
-            $log .= "<i class=\"icon16 loading\"></i><em class=\"in-progress\">".(isset($info['stage_progress'])?"{$info['stage_progress']}% ":'')."{$t->_($info['stage_status'])}</em>";
-        }elseif($info['stage_status'] == 'error'){
+        if ($info['stage_status'] == 'heartbeat') {
+            $log .= "<i class=\"icon16 loading\"></i><em class=\"in-progress\">".(isset($info['stage_progress']) ? "{$info['stage_progress']}% " : '')."{$t->_($info['stage_status'])}</em>";
+        } elseif ($info['stage_status'] == 'error') {
             $log .= "<i class=\"icon10 no\"></i> <em class=\"error\">{$t->_($info['stage_status'])} {$info['error']}</em>";
-        }else{
+        } else {
             $log .= "<i class=\"icon10 yes\"></i> <em class=\"success\">{$t->_($info['stage_status'])}</em>";
 
         }
@@ -75,34 +71,26 @@ function parseLog($stages,&$t)
     return $log;
 }
 
-if(isset($_GET['source'])&&($_GET['source']=='ajax')){
+if (isset($_GET['source']) && ($_GET['source'] == 'ajax')) {
     $installer = new waInstaller(waInstaller::LOG_DEBUG);
     $state = $installer->getState();
-    if(
-    !isset($state['stage_status'])
-    ||(($state['stage_name'] != waInstaller::STAGE_NONE)&&($state['heartbeat']>(waInstaller::TIMEOUT_RESUME+5)))
-    ||(($state['stage_name'] == waInstaller::STAGE_NONE)&&($state['heartbeat']===false))
-    ||(($state['stage_status'] == waInstaller::STATE_ERROR)&&($state['heartbeat']>4))
-    ){
+    if (!isset($state['stage_status']) || (($state['stage_name'] != waInstaller::STAGE_NONE) && ($state['heartbeat'] > (waInstaller::TIMEOUT_RESUME + 5))) || (($state['stage_name'] == waInstaller::STAGE_NONE) && ($state['heartbeat'] === false)) || (($state['stage_status'] == waInstaller::STATE_ERROR) && ($state['heartbeat'] > 4))) {
 
-        print 'RESTART:'.'start!'/*.var_export(array($state,array(
-        !isset($state['stage_status'])
-        ,(($state['stage_name'] != waInstaller::STAGE_NONE)&&($state['heartbeat']>(waInstaller::TIMEOUT_RESUME+5)))
-        ,(($state['stage_name'] == waInstaller::STAGE_UPDATE)&&($state['heartbeat']))
+        print 'RESTART:'.'start!' /*.var_export(array($state,array(
+         !isset($state['stage_status'])
+         ,(($state['stage_name'] != waInstaller::STAGE_NONE)&&($state['heartbeat']>(waInstaller::TIMEOUT_RESUME+5)))
+         ,(($state['stage_name'] == waInstaller::STAGE_UPDATE)&&($state['heartbeat']))
 
-        ,(($state['stage_name'] == waInstaller::STAGE_NONE)&&($state['heartbeat']===false))
-        )),true)*/;
+         ,(($state['stage_name'] == waInstaller::STAGE_NONE)&&($state['heartbeat']===false))
+         )),true)*/;
         exit;
-    }elseif(false
-    ||(($state['stage_status'] == waInstaller::STATE_ERROR)&&($state['heartbeat']>1))
-    ||(($state['stage_name'] == waInstaller::STAGE_UPDATE)&&($state['stage_status'] == waInstaller::STATE_COMPLETE)&&($state['heartbeat']>3))
-    ){
-        print 'COMPLETE:'.'error or complete'/*.var_export(array($state,(($state['stage_status'] == waInstaller::STATE_ERROR)&&($state['heartbeat']))
-        ,(($state['stage_name'] == waInstaller::STAGE_UPDATE)&&($state['stage_status'] == waInstaller::STATE_COMPLETE)&&($state['heartbeat']>3))
-        ),true)*/;
+    } elseif (false || (($state['stage_status'] == waInstaller::STATE_ERROR) && ($state['heartbeat'] > 1)) || (($state['stage_name'] == waInstaller::STAGE_UPDATE) && ($state['stage_status'] == waInstaller::STATE_COMPLETE) && ($state['heartbeat'] > 3))) {
+        print 'COMPLETE:'.'error or complete' /*.var_export(array($state,(($state['stage_status'] == waInstaller::STATE_ERROR)&&($state['heartbeat']))
+         ,(($state['stage_name'] == waInstaller::STAGE_UPDATE)&&($state['stage_status'] == waInstaller::STATE_COMPLETE)&&($state['heartbeat']>3))
+         ),true)*/;
         exit;
     }
-    $log = parseLog($installer->getFullState('raw'),$t);
+    $log = parseLog($installer->getFullState('raw'), $t);
     $response = <<<HTML
 <h1>{$t->_('Files')}&nbsp;<i class="icon16 loading"></i></h1>
 <div class="i-log" id="ajax-log">{$log}</div>
@@ -339,15 +327,31 @@ HTML;
             if(!isset($_POST['complete'])||!$_POST['complete']){
                 if(file_exists($local_path)&&($content = scandir($local_path))){
                     foreach($content as $path){
-                        if(preg_match('/^([\w\%0-9\-]+)\.tar\.gz$/',$path,$matches)){
-                            $decoded = urldecode($matches[1]);
-                            $urls[] = array(
-								'source'=>$local_path.$path,
-								'target'=>$decoded,
-								'slug'=>$decoded,
-                            );
-                            if(preg_match('/wa-apps\/([\w\d\-]+)$/',$decoded,$matches)){
-                                $apps[] = $matches[1];
+                        if(!in_array($path,array('.','..')) && is_dir($local_path.$path) && ($sub_content = scandir($local_path.$path))) {
+                            foreach($sub_content as $sub_path){
+                                if(preg_match('/^([\w\%0-9\-!]+)\.tar\.gz$/',$sub_path,$matches)){
+                                    $decoded = $path.'/'.urldecode($matches[1]);
+                                    $urls[] = array(
+        								'source'=>$local_path.$path.'/'.$sub_path,
+        								'target'=>$decoded,
+        								'slug'=>$decoded,
+                                    );
+                                    if(preg_match('/wa-apps\/([\w\d\-]+)$/',$decoded,$matches)){
+                                        $apps[] = $matches[1];
+                                    }
+                                }
+                            }
+                        } else {
+                            if(preg_match('/^([\w\%0-9\-!]+)\.tar\.gz$/',$path,$matches)){
+                                $decoded = urldecode($matches[1]);
+                                $urls[] = array(
+    								'source'=>$local_path.$path,
+    								'target'=>$decoded,
+    								'slug'=>$decoded,
+                                );
+                                if(preg_match('/wa-apps\/([\w\d\-]+)$/',$decoded,$matches)){
+                                    $apps[] = $matches[1];
+                                }
                             }
                         }
                     }

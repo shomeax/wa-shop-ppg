@@ -25,7 +25,7 @@
 
 {* changelog list *}
 {if !empty($item.changelog) && !empty($changelog)}
-    <p class="hint js-changelog">
+    <div class="small js-changelog">
     {foreach $item.changelog as $record}
         <strong{if $record@first} style="display:none;"{/if}><br>{$record.version}</strong><br>
 		{$record.content}
@@ -38,5 +38,5 @@
             </span>
         {/if}
     {/foreach}
-    </p>
+    </div>
 {/if}

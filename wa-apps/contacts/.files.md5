@@ -44,7 +44,7 @@ cd50f7ee5c701f1fb549eb348a2d6aa4 *lib/actions/photo/contactsPhotoEditor.action.p
 fc0d2da7bcdf1bb3a0658dc942db4ed5 *lib/classes/contactsHelper.class.php
 d649420a08780520dda8d19e14d88c0a *lib/config/app.php
 c3d3b386df4d3a35b836218577bee1a4 *lib/config/app.sql
-ef0ecdea90ad84ff84589f6103f84c7d *lib/config/build.php
+f0ec648e3493413c819ab05b1653b26a *lib/config/build.php
 8854cd6f6c92d233510f8589090d26ab *lib/config/contactsAnalyticsConfig.class.php
 a4730d8b44e4dc229b83c5386008060b *lib/config/contactsRightConfig.class.php
 8fc1ba0a453d71d16e3603da35e5270e *lib/config/data/thumb.php
@@ -64,12 +64,12 @@ f9cc097ed2992b2a1aa4322026c054b4 *locale/ru_RU/LC_MESSAGES/contacts.po
 a285da79a1cf95556e4eb1fd40059097 *templates/.htaccess
 27fe19d136d5552b33a323329f447514 *templates/actions/backend/BackendBlank.html
 9823834bfdee176869a1171393ec8bb3 *templates/actions/backend/BackendLoc.html
-272057d971476987cfa45b193bb350dd *templates/actions/backend/BackendSidebar.html
+9ae361831a1bd1125a48674429b64d24 *templates/actions/backend/BackendSidebar.html
 91de2185fed8c5b5a9adafc0968b8096 *templates/actions/categories/CategoriesAddSelected.html
 870c849c3b0ec155db04618f7e6c73fa *templates/actions/categories/CategoriesEditor.html
 15c5ef9c15a14d3448f45022a323b315 *templates/actions/contacts/ContactsAdd.html
 568b69fb1e96a0c0513ffc14e2166ed3 *templates/actions/contacts/ContactsInfo.html
-820175117db1dfee86bb64f3504ba8cb *templates/actions/contacts/ContactsLinks.html
+f64fc3896864fdc5854ee0e130d6807c *templates/actions/contacts/ContactsLinks.html
 44a10713666d7a4f52ffa6892ef8bf3c *templates/actions/contacts/ContactsUser.html
 e8936f0a82ebcbfbfec2e0486f6b48c0 *templates/actions/groups/GroupsEditor.html
 975672c7c9a951f638399522f1ecbfd9 *templates/actions/groups/GroupsRights.html

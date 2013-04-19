@@ -20,13 +20,13 @@ class webmoneyPayment extends waPayment implements waIPayment
 
     public function allowedCurrency()
     {
-        return 'RUB';
+        return array('RUB','USD');
     }
 
     public function payment($payment_form_data, $order_data, $transaction_type)
     {
-        if ($order_data['currency_id'] != 'RUB') {
-            throw new waException('Оплата на сайте WebMoney производится только в рублях (RUB) и в данный момент невозможна, так как в настройках приложения валюта рубли (RUB) не определена.');
+        if (!in_array($order_data['currency_id'],$this->allowedCurrency())) {
+            throw new waException('Оплата на сайте WebMoney производится только в рублях (RUB) и в данный момент невозможна, так как эта валюта не определена в настройках.');
         }
         if (empty($order_data['description'])) {
             $order_data['description'] = 'Заказ '.$order_data['order_id'];
@@ -278,7 +278,6 @@ class webmoneyPayment extends waPayment implements waIPayment
         $transaction_data['order_id'] = $transaction_raw_data['LMI_PAYMENT_NO'];
         $transaction_data['amount'] = $transaction_raw_data['LMI_PAYMENT_AMOUNT'];
         $transaction_data['currency_id'] = $transaction_raw_data['LMI_CURRENCY'];
-        $transaction_data['view_data'] = $view_data;
 
         return $transaction_data;
     }
@@ -295,15 +294,15 @@ class webmoneyPayment extends waPayment implements waIPayment
     {
         $protocols = array();
         $protocols[] = array(
-            'title' => 'Подключение к WebMoney',
+            'title' => 'подключение к WebMoney',
             'value' => self::PROTOCOL_WEBMONEY,
         );
         $protocols[] = array(
-            'title' => 'Подключение к PayMaster (режим совместимости)',
+            'title' => 'подключение к PayMaster (режим совместимости)',
             'value' => self::PROTOCOL_WEBMONEY_LEGACY,
         );
         $protocols[] = array(
-            'title' => 'Подключение к PayMaster',
+            'title' => 'подключение к PayMaster',
             'value' => self::PROTOCOL_PAYMASTER,
         );
         return $protocols;

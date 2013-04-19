@@ -1,6 +1,6 @@
 <?php
 
 return array(
-    'ru_RU',
     'en_US',
+    'ru_RU',
 );

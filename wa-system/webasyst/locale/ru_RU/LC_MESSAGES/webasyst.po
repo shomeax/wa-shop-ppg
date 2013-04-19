@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: WebAsyst\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2013-02-27 11:17+0300\n"
+"PO-Revision-Date: 2013-04-12 16:04+0400\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -3253,9 +3253,24 @@ msgstr "Яп"
 msgid "Russian Rouble"
 msgstr "Российский рубль"
 
+msgid "rub."
+msgstr "руб."
+
+msgid "r."
+msgstr "р."
+
 msgid "United States Dollar"
 msgstr "Доллар США"
 
 msgid "Euro"
 msgstr "Евро"
+
+msgid "select region"
+msgstr "выберите регион"
+
+msgid "Yes"
+msgstr "Да"
+
+msgid "No"
+msgstr "Нет"
 
