@@ -31,7 +31,7 @@ a5056bee54184ec9140b61907021676d *lib/classes/installerHelper.class.php
 7bbc4fc5010beebe3643bf030d286dc5 *lib/classes/installerMessage.class.php
 cb7fb43ba1f7d583272fb9b2ba399d91 *lib/cli/installerHash.cli.php
 558cba2f1c7a4af82cff23d4165702e0 *lib/config/app.php
-9f6fba90d6d1885244a1bcc76c248145 *lib/config/build.php
+e0dd5d6a9499729c447fd2cfe78b7c0b *lib/config/build.php
 ca9f4520183c02f91dac9cc21b85f703 *lib/config/factories.php
 2cacf779faf45cb5c38d751907fcf9e7 *lib/config/installerConfig.class.php
 4dbf038f0dbde5233bba8f2b8895c706 *lib/config/requirements.php

@@ -1,5 +1,5 @@
 a285da79a1cf95556e4eb1fd40059097 *.htaccess
-205f9975d5e852fe622a70be5bd69e2a *auth/adapters/facebookAuth.class.php
+7076b94d6215aa973e5c03a086ff9fc0 *auth/adapters/facebookAuth.class.php
 f8d3d625e037b45d520464846cc69b6d *auth/adapters/googleAuth.class.php
 873dbb5dfa26309b7ee3d68b454c2056 *auth/adapters/mailruAuth.class.php
 71a258b9862f6c41f0cc70f8fbccc802 *auth/adapters/twitterAuth.class.php
@@ -41,7 +41,7 @@ beae89253805817d7b925da486e1e4e9 *contact/waContactCategoryStorage.class.php
 8d89302168c886112786aca4e513eddc *contact/waContactChecklistField.class.php
 eb3ca2715a36397b616545c555b1ede2 *contact/waContactCompositeField.class.php
 ca89f1a9ccaa94b377a57e14a0417f43 *contact/waContactConditionalField.class.php
-8e93ff913ecf2ef7fa7c470da90e4993 *contact/waContactCountryField.class.php
+488444bc8197cdb52ec86d413b6c9f31 *contact/waContactCountryField.class.php
 3398d138874bd97837467d6c9ab4b1dd *contact/waContactDataStorage.class.php
 1ca87a233b93fb4f6d24686c6f35d233 *contact/waContactDataTextStorage.class.php
 5d9669e0223293c9c546f7534ec78ab1 *contact/waContactDateField.class.php
@@ -62,7 +62,7 @@ e0db1490feb270eebc228c2e400f7e87 *contact/waContactNameField.class.php
 c390a64ecd6bdf0ab8c6dd7c8be13f02 *contact/waContactPasswordField.class.php
 c6bc2372af114ec47b1d079e6f57e41b *contact/waContactPhoneField.class.php
 37bbeaee8466789e47ce0eef71b42232 *contact/waContactRadioSelectField.class.php
-3cb66e0919a9123299826f0aa6092321 *contact/waContactRegionField.class.php
+76eb4b5022e4776b98217e7c417f77c5 *contact/waContactRegionField.class.php
 858e8c9be07b0f1608280232ac8edb88 *contact/waContactSelectField.class.php
 d5401aa4a9ce37cf8887a66d5b309676 *contact/waContactStorage.class.php
 4a427e5c882ac801bd74a9701b347999 *contact/waContactStringField.class.php
@@ -81,7 +81,7 @@ ad64fe35229efe6499159ab94605766c *controller/waFrontController.class.php
 8f9854e511f97ff3c138b9f67efe12e4 *controller/waJsonController.class.php
 cc1dcbb2e6a07a3dec7cb765bcebc0dd *controller/waLoginAction.class.php
 711fb46c61ce57d18477a018da98e999 *controller/waLongActionController.class.php
-b15ce34cc34c6c84fbf8d71ffda9edb8 *controller/waOAuthController.class.php
+66b58b43ab042c4efe10cbaa1a6f985a *controller/waOAuthController.class.php
 01e0c74488bca7eed6b6c1205d0023ef *controller/waSignupAction.class.php
 d2e7fa99cc13a87c22d95b310e21a54d *controller/waUploadJsonController.class.php
 95e079efd7cf7327db72dfc0c7903fcf *controller/waViewAction.class.php
@@ -215,7 +215,7 @@ ddf1a249ec4d9ccb578a9c5bbb477cce *design/templates/Sidebar.html
 84e211c2c98814223f513c2456c476b7 *design/templates/Theme.html
 126b1b6b3d1b15a571cace70d03f5770 *design/templates/ThemeAbout.html
 ef2b9fbc9e5adf376c6bf0bb3a8eb641 *design/templates/Themes.html
-97461bb1357b2b44b767a34ea1d73c5d *event/waEventHandler.class.php
+c9bf1f0c69a860d738f0ad8f2702f050 *event/waEventHandler.class.php
 49d01fd40e7421333423f37c32c8fbe9 *exception/data/2002.php
 e4d0a51eae6a23ea198f08eb2b885082 *exception/data/403.php
 aad1de26889ad085888cd3418bb16eb3 *exception/data/404.php
@@ -241,7 +241,7 @@ ce986f0047b5f34ddb66be37253e8b4d *layout/waLayout.class.php
 b8ac3dd5367b7c21415d2694c1e74d3a *locale/data/fr_FR.php
 e4466efb2edec72b7c2e27a27d896324 *locale/data/it_IT.php
 5a8967e0e75056410e0b9013bc4200e8 *locale/data/ru_RU.php
-162a397996e232403521eef50623f7d0 *locale/locale.php
+29294d95e644d3a30cb9046e335a9fe2 *locale/locale.php
 390716e27bd9dad87b937c8b659f9c24 *locale/waGettext.class.php
 7c0fdb9d252fc6ba0b73ca16a18cbc83 *locale/waLocale.class.php
 b89923f4fe09b1effe66189191aeb5b7 *locale/waLocaleAdapter.class.php
@@ -254,7 +254,7 @@ dc512cd4ce4e462aaa6dfd5b03a3bc3f *mail/waMailDecode.class.php
 a9437b964d0e48241fdc98e56ed70e87 *mail/waMailMessage.class.php
 4a7c71dc1d4f2cbc5c3b39e01de487cc *mail/waMailPOP3.class.php
 b385290f0d4102755f4387aef65ca763 *page/actions/waPage.action.php
-d129f2d9d84c6473f656834545dc6d03 *page/actions/waPage.actions.php
+46dd3cbfe53de5dac808be7b7da1d3f5 *page/actions/waPage.actions.php
 fd774f31c306f43f1087b6d80af2f283 *page/models/waPage.model.php
 ad0d0fe93ea67469cd47668325ad6e75 *page/models/waPageParams.model.php
 3523c4017bc31c9a465dcc26e862aa9b *page/templates/Help.html
@@ -262,16 +262,16 @@ ad0d0fe93ea67469cd47668325ad6e75 *page/models/waPageParams.model.php
 a8a496924747304efd50a9f600e8685f *page/templates/PageEdit.html
 dc93ddcee81105d323b076fef180639f *payment/waAppPayment.class.php
 23fc82fdc57ed169427afba7da827fce *payment/waOrder.class.php
-38fea91d957bff3bcf865d2c9e75d986 *payment/waPayment.class.php
+52cd0242596320477f8632635c1ff31a *payment/waPayment.class.php
 a4ed4d06832940d23d037cc4d057429c *payment/waPaymentException.class.php
 009b203919e5591944624a0eb84aa601 *plugin/waPlugin.class.php
 caf6fc108d54c99778de8975dde1080d *plugin/waPlugins.class.php
-cd7a152d2cac36a4b01578f858d33478 *plugin/waSystemPlugin.class.php
+588aea118f00b7e1d4620d55817a02c3 *plugin/waSystemPlugin.class.php
 612b2b0f47b4cbe4f89abb26d2475804 *plugin/waiPluginSettings.interface.php
 9c5938b9981989b4ab199e93a428e1b3 *request/waRequest.class.php
 6677973ea3b5c999b3d86b62a5cd6073 *request/waRequestFile.class.php
 f5e161b812e80dfb8d88f0b376f6fba1 *request/waRequestFileIterator.class.php
-baa63902c2be22fc37be2bf0c5f7d3ec *response/waResponse.class.php
+3695a9968a6959c54983e1940eb57bc1 *response/waResponse.class.php
 5adfd3cdfd9ae96d5749724b6fb940e7 *routing/waRouting.class.php
 67509ccbbcde78f4e8c9f184d676ff53 *shipping/waAppShipping.class.php
 9d0cf5f5a699858f95ccabc34fcd3591 *shipping/waShipping.class.php
@@ -284,7 +284,7 @@ a633f8a410a4a6fd3a000c62dd6f7da0 *storage/waStorage.class.php
 c8e2c8860e7d273e1535a3c37a327132 *util/waArrayObject.class.php
 164f4d65deae7545132a3a7f14e34557 *util/waArrayObjectDiff.class.php
 b4ddf0fe1a7c750e6e6dde608c43b2a7 *util/waCSV.class.php
-d64ccd82d75cb5d26e61cbd1fae3f432 *util/waHtmlControl.class.php
+7e96c7bf60661e57e2a75b42ceeebee8 *util/waHtmlControl.class.php
 58203f40f7c310eebcefed313294346f *util/waUtils.class.php
 d07c73b5bc3a6753d45a0d8a69d0d8e1 *validator/waEmailValidator.class.php
 bab9bdb42d888280ab711f7c27e618d5 *validator/waLoginValidator.class.php
@@ -601,7 +601,7 @@ f9ac79c0d292d0b9e38853a235a28576 *vendors/swift/swift_required.php
 b1a195440de4ca5c03115243c9aebcd6 *view/waPHPView.class.php
 1d6134b20c9895103644615f2e0123ef *view/waSmarty3View.class.php
 a968418b49f7f67899f9f9654cd1b853 *view/waView.class.php
-778caacd744fb14e7f6a082d9d84fd5d *view/waViewHelper.class.php
+5485309ddeed8feebcabb6e812a00942 *view/waViewHelper.class.php
 b358a514f74ebc07f35fae2eca6745c2 *waSystem.class.php
 77ffae12e0196e86d821a189ca19c72d *webasyst/lib/actions/backend/webasystBackend.actions.php
 51a99d5f42eac3396318754762a8b2c4 *webasyst/lib/actions/backend/webasystBackendCount.controller.php
@@ -624,7 +624,7 @@ a6ad815b6adf7ab0df2029f83d7adecd *webasyst/lib/actions/settings/webasystSettings
 b0d5e73c1695012a238a657ece72c65c *webasyst/lib/cli/webasystGenerateDb.cli.php
 9ea8d2c872c45f17747d373675e08bae *webasyst/lib/config/app.php
 bdee4a25131b143df650dc4445a5c117 *webasyst/lib/config/app.sql
-9f6fba90d6d1885244a1bcc76c248145 *webasyst/lib/config/build.php
+e0dd5d6a9499729c447fd2cfe78b7c0b *webasyst/lib/config/build.php
 89ccacc047dbff0bdf78efe2dc995563 *webasyst/lib/config/db.php
 d2f41e6c5bd5ac9d009247198af3a938 *webasyst/lib/config/install.php
 c366a90fb6af4250e37f8b6c5e876904 *webasyst/lib/config/wa_country.sql
@@ -683,8 +683,8 @@ b69d18513257d2c0675fee56d4a060b7 *webasyst/lib/updates/1.1/1361447363.php
 5738bef9a48b933f6664185fc5321b09 *webasyst/locale/en_US/LC_MESSAGES/webasyst.po
 c4dd924a4fd5e01ceb06f8c23d54403f *webasyst/locale/it_IT/LC_MESSAGES/webasyst.mo
 227b1511827b90c91564cb28945178d6 *webasyst/locale/it_IT/LC_MESSAGES/webasyst.po
-c6223cc33acdc8aab878df27095c17c7 *webasyst/locale/ru_RU/LC_MESSAGES/webasyst.mo
-e6ad5eeae024e00422ed42fe8ecd2b14 *webasyst/locale/ru_RU/LC_MESSAGES/webasyst.po
+4b65ea2fa82d2ca857ec4e4a2ac0a660 *webasyst/locale/ru_RU/LC_MESSAGES/webasyst.mo
+5ee78603680c42eb91f556bbacaf63b0 *webasyst/locale/ru_RU/LC_MESSAGES/webasyst.po
 1b84d6a29417e3fec540f464dd2752de *webasyst/templates/actions/backend/BackendDefault.html
 ce67c0ea1386fbdc04f112bef26fb98c *webasyst/templates/actions/backend/BackendDefaultMobile.html
 deb94e92f55dfd03e82e6eb2c5f091bb *webasyst/templates/actions/forgot/ForgotPassword.html

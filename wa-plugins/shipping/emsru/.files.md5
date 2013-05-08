@@ -1,8 +1,8 @@
 96dd02af5ef307d58f6a83b7ccb2bfb2 *img/ems.png
 87fae44af91d988e14e6774c43e34697 *img/ems16.png
 a1751e1f10a3b96b05d0401c97e72008 *lib/.htaccess
-9f6fba90d6d1885244a1bcc76c248145 *lib/config/build.php
+661e042f27355d7bdc1f5239a91a8f71 *lib/config/build.php
 60153b2e0af4d26b12617e1a9feb4ded *lib/config/plugin.php
 470d46b07256dc77abd73e865f554f2b *lib/config/requirements.php
 0fbe809fed7cfaa0feb18aa6481f7438 *lib/config/settings.php
-d9e954f3a0f5b12755925e642a44b070 *lib/emsruShipping.class.php
+18505fdbc7a4c4fbbe08c078b206a6d8 *lib/emsruShipping.class.php

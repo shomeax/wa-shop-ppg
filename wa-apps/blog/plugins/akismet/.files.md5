@@ -1,0 +1,14 @@
+44d458b826bf527d562981e9c46d3f88 *img/akismet.png
+25db76f38a8930d43f4b5aae7c04b5d3 *js/akismet.js
+a285da79a1cf95556e4eb1fd40059097 *lib/.htaccess
+081998961a36dc87a87bb271c7892d00 *lib/actions/blogAkismetPluginBackend.controller.php
+c412498d6214485fc88ecd023a99d3d5 *lib/blogAkismet.plugin.php
+3d7ab91cba4eec775482fc356abdef7d *lib/config/build.php
+a6e67f5343fd5ec92e85e88cf6ece45e *lib/config/plugin.php
+a285da79a1cf95556e4eb1fd40059097 *locale/.htaccess
+d4bf6fc497c55958662b04a54d957666 *locale/en_US/LC_MESSAGES/blog_akismet.mo
+5507eb274ccb768c781314e94dabac06 *locale/en_US/LC_MESSAGES/blog_akismet.po
+7934e2e593d257c7280b837c8d4b8508 *locale/ru_RU/LC_MESSAGES/blog_akismet.mo
+a7d71e1dd991ee6d9e1d0e866a373177 *locale/ru_RU/LC_MESSAGES/blog_akismet.po
+a285da79a1cf95556e4eb1fd40059097 *vendors/.htaccess
+74cc950ddf554e39f5778896f6f54965 *vendors/Akismet.class.php
